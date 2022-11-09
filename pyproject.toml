@@ -33,12 +33,12 @@ classifiers = [  #! Update me
 
 [tool.poetry.dependencies]
 python = "^3.9"
-
-typer = {extras = ["all"], version = "^0.4.0"}
 rich = "^10.14.0"
 numpy = "^1.23.4"
 scipy = "^1.9.3"
 numba = "^0.56.4"
+tqdm = "^4.64.1"
+matplotlib = "^3.6.2"
 
 [tool.poetry.dev-dependencies]
 bandit = "^1.7.1"
@@ -57,6 +57,7 @@ coverage = "^6.1.2"
 coverage-badge = "^1.1.0"
 pytest-html = "^3.1.1"
 pytest-cov = "^3.0.0"
+jupyterlab = "^3.5.0"
 
 [tool.black]
 # https://github.com/psf/black
