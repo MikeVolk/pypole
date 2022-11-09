@@ -2,6 +2,7 @@ import numba
 import numpy as np
 from numpy.typing import NDArray
 
+
 def dipolarity_param(data_map, fitted_map):
     """
     Calculate the dipolarity parameter of a magnetic dipole field.
@@ -31,6 +32,7 @@ def dipolarity_param(data_map, fitted_map):
     """
     residual: NDArray = fitted_map - data_map
     return 1 - (rms(residual) / rms(data_map))
+
 
 def rms(b_map: np.ndarray):
     """

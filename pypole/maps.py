@@ -56,7 +56,7 @@ def get_random_sources(
 
 
 def get_random_dim(moment_range, n_sources):
-    """ Generate randomly distributed dipole moments on the unit sphere
+    """Generate randomly distributed dipole moments on the unit sphere
 
     Parameters
     ----------
@@ -77,9 +77,7 @@ def get_random_dim(moment_range, n_sources):
     # get random inclinations from uniform distribution (rand)
     inclination = np.rad2deg(np.arccos(2 * np.random.rand(n_sources) - 1)) - 90
     # get uniform distribution of moment magnitude
-    moment_scalar = np.random.uniform(
-        moment_range[0], moment_range[1], size=n_sources
-    )
+    moment_scalar = np.random.uniform(moment_range[0], moment_range[1], size=n_sources)
     return np.stack([declination, inclination, moment_scalar]).T
 
 

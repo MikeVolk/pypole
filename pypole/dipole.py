@@ -36,6 +36,7 @@ def synthetic_map(
     locations, source_vectors = get_random_sources(n_sources)
     return calculate_map(x_grid, y_grid, locations, source_vectors, sensor_distance)
 
+
 def calculate_map(
     x_grid: np.ndarray,
     y_grid: np.ndarray,
@@ -63,15 +64,18 @@ def calculate_map(
     b = np.zeros((n_sources, x_grid.shape[0], x_grid.shape[1]))
 
     for i in range(n_sources):
-        b[i,:,:] = dipole_field(x_grid, y_grid,
-                          locations[i, 0],
-                          locations[i, 1],
-                          locations[i, 2] + sensor_distance,
-                          source_vectors[i,0],
-                          source_vectors[i,1],
-                          source_vectors[i,1],
-                          )
+        b[i, :, :] = dipole_field(
+            x_grid,
+            y_grid,
+            locations[i, 0],
+            locations[i, 1],
+            locations[i, 2] + sensor_distance,
+            source_vectors[i, 0],
+            source_vectors[i, 1],
+            source_vectors[i, 1],
+        )
     return np.sum(b, axis=0)
+
 
 @numba.jit(fastmath=True)
 def dipole_field(
@@ -115,5 +119,3 @@ def dipole_field(
     return 1e-7 * (
         3.0 * aux * z_observed - mz / np.sqrt(np.power(squared_distance, 3.0))
     )
-
-
