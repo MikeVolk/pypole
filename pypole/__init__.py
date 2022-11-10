@@ -1,5 +1,5 @@
 # type: ignore[attr-defined]
-"""Awesome `pypole` is a Python cli/package created with https://github.com/TezRomacH/python-package-template"""
+""" `pypole` is a Python package created with https://github.com/TezRomacH/python-package-template"""
 
 import sys
 
