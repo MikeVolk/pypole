@@ -115,10 +115,10 @@ def fit_dipole(b_map, p0, x_grid, y_grid):
         dipole_residual,
         p0,
         args=(grid, b_map.ravel()),
-        jac="3-point",
         loss="huber",
-        method="dogbox",
+        method="trf",
         gtol=2.3e-16,
         ftol=2.3e-16,
         xtol=2.3e-16,
+        max_nfev = 5000,
     )
