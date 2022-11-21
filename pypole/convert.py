@@ -1,6 +1,6 @@
+import numba
 import numpy as np
 from numpy.typing import NDArray
-import numba
 
 """
 Converts between xyz and polar/azimuth coordinates with the convention of N along y-axis and z along the down direction.

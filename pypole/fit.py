@@ -120,5 +120,5 @@ def fit_dipole(b_map, p0, x_grid, y_grid):
         gtol=2.3e-16,
         ftol=2.3e-16,
         xtol=2.3e-16,
-        max_nfev = 5000,
+        max_nfev=5000,
     )

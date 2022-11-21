@@ -1,8 +1,10 @@
+import itertools
+
 import numba
 import numpy as np
 from numpy.typing import NDArray
-from pypole.maps import get_random_sources, get_grid
-import itertools
+
+from pypole.maps import get_grid, get_random_sources
 
 
 def synthetic_map(

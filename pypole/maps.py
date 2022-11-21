@@ -1,8 +1,9 @@
 import typing
-from typing import Tuple, Any
+from typing import Any, Tuple
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
+
 from pypole import convert
 
 
