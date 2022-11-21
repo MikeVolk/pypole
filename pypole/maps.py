@@ -4,7 +4,9 @@ from typing import Tuple, Any
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from pypole import convert
+import logging
 
+LOG = logging.getLogger(__name__)
 
 def get_random_sources(
     n_sources: int,
@@ -30,10 +32,9 @@ def get_random_sources(
 
     Returns
     -------
-        ndarrays of location, source_vector, and total_vector
-            location: x_source, y_source, z_source
-            source_vector: x,y,z
-            total_vector: x,y,z
+        ndarrays of location and source_vector
+            location (n_sources, 3): x_source, y_source, z_source
+            source_vector (n_sources, 3): x,y,z components of dipole moment
 
     Notes
     -----
@@ -71,6 +72,13 @@ def get_random_dim(moment_range, n_sources):
     -------
     dim: ndarray
         dipole moments in (declination, inclination, moment) format
+
+    Examples
+    --------
+    >>> np.random.seed(0)
+    >>> get_random_dim((1e-14, 1e-14), 2)
+    >>> array([[ 1.97572861e+02, -1.18603363e+01,  1.00000000e-14], [ 2.57468172e+02, -5.15016644e+00,  1.00000000e-14]])
+
     """
     # get random declinations from uniform distribution (rand)
     declination = np.random.uniform(0, 360, n_sources)
@@ -99,6 +107,13 @@ def get_random_locations(n_sources, x_range, y_range, z_range):
     -------
     locations: ndarray
         x,y,z locations of sources
+
+    Examples
+    --------
+    >>> np.random.seed(0)
+    >>> get_random_locations(2, (-3e-6, 3e-6), (-3e-6, 3e-6), (1e-6, 4e-6))
+    >>> array([[2.92881024e-07, 6.16580256e-07, 2.27096440e-06],[1.29113620e-06, 2.69299098e-07, 2.93768234e-06]])
+
     """
 
     # get uniform distribution of x/y locations
@@ -108,7 +123,7 @@ def get_random_locations(n_sources, x_range, y_range, z_range):
     return np.stack([x_source, y_source, z_source]).T
 
 
-def get_grid(pixels: int = 100, pixel_size: float = 5e-6) -> NDArray:
+def get_grid(pixels: Tuple[int,int] = (100, 100), pixel_size: float = 5e-6) -> NDArray:
     """Generate observation coordinates of the map
 
     Parameters
@@ -119,7 +134,14 @@ def get_grid(pixels: int = 100, pixel_size: float = 5e-6) -> NDArray:
         size of a single pixel (x/y are the same) in micron.
         defines: left map edge = -(pixel*pixel_size)/2, right map edge = (pixel*pixel_size)/2
     """
-    n_points = np.linspace(-pixels, pixels, pixels)
 
-    grid = np.ones((pixels, pixels)) * (n_points * pixel_size) / 2
-    return grid, grid.T
+    if len(pixels) != 2:
+        LOG.warning("pixels should be a tuple of (x,y) pixel size. Setting to ({pixels},{pixels})")
+        pixels = (pixels, pixels)
+
+    x_points = np.linspace(-pixels[0], pixels[0], pixels[0])
+    y_points = np.linspace(-pixels[1], pixels[1], pixels[1])
+
+    x_grid = np.ones((pixels, pixels)) * (x_points * pixel_size) / 2
+    y_grid = np.ones((pixels, pixels)) * (y_points * pixel_size) / 2
+    return x_grid, y_grid.T
