@@ -4,16 +4,16 @@ from typing import Any, Tuple
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-from pypole import convert
+from pypole import NDArray64, convert
 
 
 def get_random_sources(
     n_sources: int,
-    x_range: tuple = (-3.0e-6, 3.0e-6),
-    y_range: tuple = (-3.0e-6, 3.0e-6),
-    z_range: tuple = (1e-6, 4e-6),
-    moment_range: tuple = (1e-14, 1e-14),
-) -> tuple[NDArray, NDArray]:
+    x_range: tuple[float, float] = (-3.0e-6, 3.0e-6),
+    y_range: tuple[float, float] = (-3.0e-6, 3.0e-6),
+    z_range: tuple[float, float] = (1e-6, 4e-6),
+    moment_range: tuple[float, float] = (1e-14, 1e-14),
+) -> tuple[NDArray64, NDArray64]:
     """Generate diction of point source parameters
 
     Parameters
@@ -109,7 +109,9 @@ def get_random_locations(n_sources, x_range, y_range, z_range):
     return np.stack([x_source, y_source, z_source]).T
 
 
-def get_grid(pixels: int = 100, pixel_size: float = 5e-6) -> NDArray:
+def get_grid(
+    pixels: int = 100, pixel_size: float = 5e-6
+) -> tuple[NDArray64, NDArray64]:
     """Generate observation coordinates of the map
 
     Parameters

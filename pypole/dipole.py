@@ -1,9 +1,12 @@
+from typing import Any
+
 import itertools
 
 import numba
 import numpy as np
 from numpy.typing import NDArray
 
+from pypole import NDArray64
 from pypole.maps import get_grid, get_random_sources
 
 
@@ -12,7 +15,7 @@ def synthetic_map(
     pixels: int = 100,
     sensor_distance: float = 5e-6,
     pixel_size: float = 1e-6,
-) -> NDArray:
+) -> NDArray64:
     """Calculate a single simple magnetic field map for a number of sources.
 
     Parameters
@@ -40,12 +43,12 @@ def synthetic_map(
 
 
 def calculate_map(
-    x_grid: np.ndarray,
-    y_grid: np.ndarray,
-    locations: np.ndarray,
-    source_vectors: np.ndarray,
+    x_grid: NDArray64,
+    y_grid: NDArray64,
+    locations: NDArray64,
+    source_vectors: NDArray64,
     sensor_distance: float = 5e-6,
-) -> np.ndarray:
+) -> NDArray[np.float_]:
     """Calculate the magnetic field map for a set of sources
 
     Parameters
@@ -62,8 +65,8 @@ def calculate_map(
         sensor-sample distance by default 0.0
     """
 
-    n_sources = locations.shape[0]
-    b = np.zeros((n_sources, x_grid.shape[0], x_grid.shape[1]))
+    n_sources: int = locations.shape[0]
+    b: NDArray64 = np.zeros((n_sources, x_grid.shape[0], x_grid.shape[1]))
 
     for i in range(n_sources):
         b[i, :, :] = dipole_field(
@@ -81,15 +84,15 @@ def calculate_map(
 
 @numba.jit(fastmath=True)
 def dipole_field(
-    x_grid: np.ndarray,
-    y_grid: np.ndarray,
-    x_source: np.ndarray,
-    y_source: np.ndarray,
-    z_observed: np.ndarray,
+    x_grid: NDArray64,
+    y_grid: NDArray64,
+    x_source: NDArray64,
+    y_source: NDArray64,
+    z_observed: NDArray64,
     mx: float,
     my: float,
     mz: float,
-) -> np.ndarray:
+) -> NDArray64:
     """Compute the field of a magnetic dipole point source
 
     Parameters

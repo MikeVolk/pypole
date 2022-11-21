@@ -2,8 +2,10 @@ import numba
 import numpy as np
 from numpy.typing import NDArray
 
+from pypole import NDArray64
 
-def dipolarity_param(data_map, fitted_map):
+
+def dipolarity_param(data_map: NDArray64, fitted_map: NDArray64) -> np.float64:
     """
     Calculate the dipolarity parameter of a magnetic dipole field.
 
@@ -30,13 +32,13 @@ def dipolarity_param(data_map, fitted_map):
     Geochemistry, Geophysics, Geosystems 21, no. 8 (2020): e2020GC009147. https://doi.org/10/ghfpqv.
 
     """
-    residual: NDArray = fitted_map - data_map
+    residual: NDArray64 = fitted_map - data_map
     return 1 - (rms(residual) / rms(data_map))
 
 
-def rms(b_map: np.ndarray):
+def rms(b_map: NDArray64) -> np.float64:
     """
     Calculate the root mean square of a map.
 
     """
-    return np.sqrt(np.mean(np.square(b_map)))
+    return np.sqrt(np.mean(np.square(b_map))).astype(np.float64)
