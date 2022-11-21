@@ -108,7 +108,7 @@ def get_random_locations(n_sources, x_range, y_range, z_range):
     return np.stack([x_source, y_source, z_source]).T
 
 
-def get_grid(n_pixel: int = 100, pixel_size: float = 5e-6) -> NDArray:
+def get_grid(pixels: int = 100, pixel_size: float = 5e-6) -> NDArray:
     """Generate observation coordinates of the map
 
     Parameters
@@ -119,13 +119,7 @@ def get_grid(n_pixel: int = 100, pixel_size: float = 5e-6) -> NDArray:
         size of a single pixel (x/y are the same) in micron.
         defines: left map edge = -(pixel*pixel_size)/2, right map edge = (pixel*pixel_size)/2
     """
-    n_x_points = np.linspace(
-        -(n_pixel * pixel_size) / 2, (n_pixel * pixel_size) / 2, n_pixel
-    )
-    n_y_points = np.linspace(
-        -(n_pixel * pixel_size) / 2, (n_pixel * pixel_size) / 2, n_pixel
-    )
+    n_points = np.linspace(-pixels, pixels, pixels)
 
-    xgrid = np.ones((n_pixel, n_pixel)) * n_x_points
-    ygrid = np.ones((n_pixel, n_pixel)) * n_y_points
-    return xgrid, ygrid.T
+    grid = np.ones((pixels, pixels)) * (n_points * pixel_size) / 2
+    return grid, grid.T
