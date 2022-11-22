@@ -1,5 +1,5 @@
 default_language_version:
-  python: python3.9
+  python: python3.10
 
 default_stages: [commit, push]
 
@@ -32,5 +32,13 @@ repos:
       - id: black
         name: black
         entry: poetry run black --config pyproject.toml
+        types: [python]
+        language: system
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: poetry run mypy --config pyproject.toml
         types: [python]
         language: system

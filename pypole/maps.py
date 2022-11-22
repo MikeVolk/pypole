@@ -1,20 +1,21 @@
 import typing
-from typing import Tuple, Any
+from typing import Any, Tuple
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
-from pypole import convert
 import logging
 
+from pypole import NDArray64, convert
 LOG = logging.getLogger(__name__)
+
 
 def get_random_sources(
     n_sources: int,
-    x_range: tuple = (-3.0e-6, 3.0e-6),
-    y_range: tuple = (-3.0e-6, 3.0e-6),
-    z_range: tuple = (1e-6, 4e-6),
-    moment_range: tuple = (1e-14, 1e-14),
-) -> tuple[NDArray, NDArray]:
+    x_range: tuple[float, float] = (-3.0e-6, 3.0e-6),
+    y_range: tuple[float, float] = (-3.0e-6, 3.0e-6),
+    z_range: tuple[float, float] = (1e-6, 4e-6),
+    moment_range: tuple[float, float] = (1e-14, 1e-14),
+) -> tuple[NDArray64, NDArray64]:
     """Generate diction of point source parameters
 
     Parameters

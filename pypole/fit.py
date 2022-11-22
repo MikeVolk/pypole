@@ -3,13 +3,19 @@ import typing
 import numba
 import numpy as np
 import tqdm
+from numpy.typing import ArrayLike, NDArray
 from scipy.optimize import least_squares
 
-from pypole import compute
+from pypole import NDArray64, compute
 from pypole.dipole import dipole_field
 
 
-def fit_dipole_n_maps(x_grid, y_grid, b_maps, initial_guess):
+def fit_dipole_n_maps(
+    x_grid: NDArray[np.float64],
+    y_grid: NDArray[np.float64],
+    b_maps: NDArray[np.float64],
+    initial_guess: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """fits a series of maps each with a single dipole.
 
     Parameters
@@ -38,8 +44,8 @@ def fit_dipole_n_maps(x_grid, y_grid, b_maps, initial_guess):
     return best_fit_dipoles
 
 
-@numba.jit(nopython=True)
-def __initial_guess_from_synthetic(mvec):
+@numba.njit()
+def __initial_guess_from_synthetic(mvec: NDArray[np.float64]) -> NDArray[np.float64]:
     """
     Get initial guess for dipolarity parameter calculation
 
@@ -53,14 +59,14 @@ def __initial_guess_from_synthetic(mvec):
     initial guess: ndarray(6,)
         initial guess for dipolarity parameter calculation
     """
-    return [0, 0, 5e-6, mvec[0], mvec[1], mvec[2]]
+    return np.array([0, 0, 5e-6, mvec[0], mvec[1], mvec[2]])
 
 
 def dipole_residual(
-    params: typing.Tuple[float, float, float, float, float, float],
-    grid: np.ndarray,
-    data: np.ndarray,
-) -> np.ndarray:
+    params: tuple[float, float, float, float, float, float],
+    grid: NDArray[np.float64],
+    data: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """residual function for fitting a single dipole to a magnetic field map
 
     Parameters
@@ -120,5 +126,5 @@ def fit_dipole(b_map, p0, x_grid, y_grid):
         gtol=2.3e-16,
         ftol=2.3e-16,
         xtol=2.3e-16,
-        max_nfev = 5000,
+        max_nfev=5000,
     )

@@ -1,19 +1,17 @@
-# type: ignore[attr-defined]
-""" `pypole` is a Python package created with https://github.com/TezRomacH/python-package-template"""
+__version__ = "0.1.0a"
 
+import logging
+import os
+import shutil
 import sys
+from pathlib import Path
 
-if sys.version_info >= (3, 8):
-    from importlib import metadata as importlib_metadata
-else:
-    import importlib_metadata
+PROJECT_PATH = Path(__file__).parent
 
+SRC_PATH = PROJECT_PATH.parent
+sys.path.append(str(SRC_PATH))
 
-def get_version() -> str:
-    try:
-        return importlib_metadata.version(__name__)
-    except importlib_metadata.PackageNotFoundError:  # pragma: no cover
-        return "unknown"
+import numpy as np
+from numpy.typing import NDArray
 
-
-version: str = get_version()
+NDArray64 = NDArray[np.float64]

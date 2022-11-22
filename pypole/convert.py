@@ -1,13 +1,15 @@
-import numpy as np
-from numpy.typing import NDArray
 import numba
+import numpy as np
+from numpy.typing import ArrayLike, NDArray
+
+from pypole import NDArray64
 
 """
 Converts between xyz and polar/azimuth coordinates with the convention of N along y-axis and z along the down direction.
 """
 
 
-def dim2xyz(dim: NDArray) -> NDArray[np.float64]:
+def dim2xyz(dim: NDArray64) -> NDArray64:
     """calculates x,y,z from polar/azimuth data
 
     Parameters
@@ -40,7 +42,7 @@ def dim2xyz(dim: NDArray) -> NDArray[np.float64]:
     return np.array(moment_vector).T
 
 
-def xyz2dim(xyz: NDArray) -> NDArray[np.float64]:
+def xyz2dim(xyz: ArrayLike) -> NDArray64:
     """calculates polar/azimuth from x,y,z data
 
     Parameters
@@ -58,7 +60,7 @@ def xyz2dim(xyz: NDArray) -> NDArray[np.float64]:
     return np.stack([dec, inc, mag]).T
 
 
-def xy2dec(xy) -> NDArray[np.float64]:
+def xy2dec(xy: ArrayLike) -> NDArray64:
     """calculates declination from x,y data
     Parameters
     ----------
@@ -71,7 +73,7 @@ def xy2dec(xy) -> NDArray[np.float64]:
     return (90 + np.degrees(np.arctan2(y, x))) % 360
 
 
-def z2inc(z, mag) -> NDArray[np.float64]:
+def z2inc(z: ArrayLike, mag: ArrayLike) -> NDArray64:
     """calculates inclination from z data
 
     Parameters
@@ -81,7 +83,8 @@ def z2inc(z, mag) -> NDArray[np.float64]:
     mag: ndarray (n,)
         magnitude of n vectors [m1,m2,...]
     """
-    return -np.degrees(np.arcsin(z / mag))
+    z_norm: NDArray64 = np.array(z) / np.array(mag)
+    return -np.degrees(np.arcsin(z_norm))
 
 
 def main():
