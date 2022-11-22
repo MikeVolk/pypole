@@ -2,7 +2,6 @@ import typing
 
 import numba
 import numpy as np
-import tqdm
 from numpy.typing import ArrayLike, NDArray
 from scipy.optimize import least_squares
 
@@ -11,11 +10,11 @@ from pypole.dipole import dipole_field
 
 
 def fit_dipole_n_maps(
-    x_grid: NDArray[np.float64],
-    y_grid: NDArray[np.float64],
-    b_maps: NDArray[np.float64],
-    initial_guess: NDArray[np.float64],
-) -> NDArray[np.float64]:
+    x_grid: NDArray64,
+    y_grid: NDArray64,
+    b_maps: NDArray64,
+    initial_guess: NDArray64,
+) -> NDArray64:
     """fits a series of maps each with a single dipole.
 
     Parameters
@@ -32,20 +31,17 @@ def fit_dipole_n_maps(
     n_maps = b_maps.shape[0]
     best_fit_dipoles = np.empty((n_maps, 6))
 
-    with tqdm.tqdm(total=n_maps, unit="fit", ncols=80) as pbar:
-        for map_index in numba.prange(n_maps):
-            best_fit_dipoles[map_index, :] = _fit_dipole(
-                b_map=b_maps[map_index],
-                p0=initial_guess[map_index],
-                x_grid=x_grid,
-                y_grid=y_grid,
-            )
-            pbar.update(1)
+    for map_index in numba.prange(n_maps):
+        best_fit_dipoles[map_index, :] = _fit_dipole(
+            b_map=b_maps[map_index],
+            p0=initial_guess[map_index],
+            x_grid=x_grid,
+            y_grid=y_grid,
+        )
     return best_fit_dipoles
 
 
-@numba.njit()
-def __initial_guess_from_synthetic(mvec: NDArray[np.float64]) -> NDArray[np.float64]:
+def __initial_guess_from_synthetic(mvec: NDArray64) -> NDArray64:
     """
     Get initial guess for dipolarity parameter calculation
 
@@ -64,9 +60,9 @@ def __initial_guess_from_synthetic(mvec: NDArray[np.float64]) -> NDArray[np.floa
 
 def dipole_residual(
     params: tuple[float, float, float, float, float, float],
-    grid: NDArray[np.float64],
-    data: NDArray[np.float64],
-) -> NDArray[np.float64]:
+    grid: NDArray64,
+    data: NDArray64,
+) -> NDArray64:
     """residual function for fitting a single dipole to a magnetic field map
 
     Parameters
