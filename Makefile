@@ -111,3 +111,7 @@ build-remove:
 
 .PHONY: cleanup
 cleanup: pycache-remove dsstore-remove mypycache-remove ipynbcheckpoints-remove pytestcache-remove
+
+.PHONY: pre-commit
+pre-commit:
+	poetry run pre-commit run --all-files
