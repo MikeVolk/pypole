@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Tuple
 
 import itertools
 
@@ -12,7 +12,7 @@ from pypole.maps import get_grid, get_random_sources
 
 def synthetic_map(
     n_sources: int = 100,
-    pixels: int = 100,
+    pixels: tuple[int, int] = (100, 100),
     sensor_distance: float = 5e-6,
     pixel_size: float = 1e-6,
 ) -> NDArray64:
@@ -108,11 +108,11 @@ def dipole_field(
     y_grid: ndarray(pixel, pixel)
         grid to calculate the fields on
     mx: ndarray(n_sources,)
-        x-component of vector
+        x-component of vector in Am2
     my: ndarray(n_sources,)
-        y-component of vector
+        y-component of vector in Am2
     mz: ndarray(n_sources,)
-        z-component of vector
+        z-component of vector in Am2
     """
     dgridx = np.subtract(x_grid, x_source)
     dgridy = np.subtract(y_grid, y_source)
@@ -121,6 +121,5 @@ def dipole_field(
 
     aux = mx * dgridx + my * dgridy + mz * z_observed
     aux /= np.sqrt(np.power(squared_distance, 5.0))
-    return 1e-7 * (
-        3.0 * aux * z_observed - mz / np.sqrt(np.power(squared_distance, 3.0))
-    )
+    aux = 3.0 * aux * z_observed
+    return 1e-7 * (aux - mz / np.sqrt(np.power(squared_distance, 3.0)))

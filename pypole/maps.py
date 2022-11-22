@@ -1,11 +1,13 @@
 import typing
-from typing import Any, Tuple
+from typing import Any, Tuple, Union
+
+import logging
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
-import logging
 
 from pypole import NDArray64, convert
+
 LOG = logging.getLogger(__name__)
 
 
@@ -124,7 +126,9 @@ def get_random_locations(n_sources, x_range, y_range, z_range):
     return np.stack([x_source, y_source, z_source]).T
 
 
-def get_grid(pixels: Tuple[int,int] = (100, 100), pixel_size: float = 5e-6) -> NDArray:
+def get_grid(
+    pixels: Union[tuple[int, int], int] = (100, 100), pixel_size: float = 5e-6
+) -> tuple[NDArray64, NDArray64]:
     """Generate observation coordinates of the map
 
     Parameters
@@ -136,13 +140,14 @@ def get_grid(pixels: Tuple[int,int] = (100, 100), pixel_size: float = 5e-6) -> N
         defines: left map edge = -(pixel*pixel_size)/2, right map edge = (pixel*pixel_size)/2
     """
 
-    if len(pixels) != 2:
-        LOG.warning("pixels should be a tuple of (x,y) pixel size. Setting to ({pixels},{pixels})")
+    if isinstance(pixels, int):
+        LOG.warning(
+            f"pixels should be a tuple of (x,y) pixel size. Setting to ({pixels},{pixels})"
+        )
         pixels = (pixels, pixels)
 
-    x_points = np.linspace(-pixels[0], pixels[0], pixels[0])
-    y_points = np.linspace(-pixels[1], pixels[1], pixels[1])
+    x_points = np.linspace(-pixels[0], pixels[0], pixels[0]) * pixel_size / 2
+    y_points = np.linspace(-pixels[1], pixels[1], pixels[1]) * pixel_size / 2
 
-    x_grid = np.ones((pixels, pixels)) * (x_points * pixel_size) / 2
-    y_grid = np.ones((pixels, pixels)) * (y_points * pixel_size) / 2
-    return x_grid, y_grid.T
+    x_grid, y_grid = np.meshgrid(x_points, y_points)
+    return x_grid.astype(np.float64), y_grid.astype(np.float64)

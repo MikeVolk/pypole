@@ -6,7 +6,7 @@ import tqdm
 from numpy.typing import ArrayLike, NDArray
 from scipy.optimize import least_squares
 
-from pypole import NDArray64, compute
+from pypole import NDArray64, compute, maps
 from pypole.dipole import dipole_field
 
 
@@ -34,7 +34,7 @@ def fit_dipole_n_maps(
 
     with tqdm.tqdm(total=n_maps, unit="fit", ncols=80) as pbar:
         for map_index in numba.prange(n_maps):
-            best_fit_dipoles[map_index, :] = fit_dipole(
+            best_fit_dipoles[map_index, :] = _fit_dipole(
                 b_map=b_maps[map_index],
                 p0=initial_guess[map_index],
                 x_grid=x_grid,
@@ -97,7 +97,7 @@ def dipole_residual(
     return arr.ravel() - data
 
 
-def fit_dipole(b_map, p0, x_grid, y_grid):
+def fit_dipole(b_map, p0, pixel_size=1):
     """fits a single dipole to a magnetic field map
 
     Parameters
@@ -106,21 +106,25 @@ def fit_dipole(b_map, p0, x_grid, y_grid):
         magnetic field map in Tesla
     p0: tuple(floats)
         initial guess for dipole parameters
-    x_grid: ndarray
-        x grid in meters
-    y_grid: ndarray
-        y grid in meters
+    pixel_size: float
+        pixel size in meters
 
     Returns
     -------
     dipole parameters: tuple(floats)
         dipole parameters [x_source, y_source, z_source, mx, my, mz]
     """
-    grid = np.vstack((x_grid.ravel(), y_grid.ravel()))
+
+    x_grid, y_grid = maps.get_grid(pixels=b_map.shape, pixel_size=pixel_size)
+    return _fit_dipole(b_map, p0, x_grid, y_grid)
+
+
+def _fit_dipole(b_map, p0, x_grid, y_grid):
+    grid = np.vstack((y_grid.ravel(), x_grid.ravel()))
     return least_squares(
         dipole_residual,
         p0,
-        args=(grid, b_map.ravel()),
+        args=(grid, b_map.T.ravel()),
         loss="huber",
         method="trf",
         gtol=2.3e-16,
