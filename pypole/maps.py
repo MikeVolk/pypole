@@ -50,7 +50,7 @@ def get_random_sources(
     locations = locations.reshape(n_sources, 3)
 
     # calculate the x/y/z components
-    dim = get_random_dim(moment_range, n_sources)
+    dim = get_random_dim(n_sources, moment_range)
     xyz = convert.dim2xyz(dim)
 
     # reshape xyz to be (n_sources, (x,y,z))
@@ -59,7 +59,7 @@ def get_random_sources(
     return locations, source_vector
 
 
-def get_random_dim(moment_range, n_sources):
+def get_random_dim(n_sources, moment_range):
     """Generate randomly distributed dipole moments on the unit sphere
 
     Parameters
@@ -79,7 +79,7 @@ def get_random_dim(moment_range, n_sources):
     Examples
     --------
     >>> np.random.seed(0)
-    >>> get_random_dim((1e-14, 1e-14), 2)
+    >>> get_random_dim(2,(1e-14, 1e-14))
     >>> array([[ 1.97572861e+02, -1.18603363e+01,  1.00000000e-14], [ 2.57468172e+02, -5.15016644e+00,  1.00000000e-14]])
 
     """
