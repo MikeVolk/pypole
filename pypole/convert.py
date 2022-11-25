@@ -5,7 +5,19 @@ from numpy.typing import ArrayLike, NDArray
 from pypole import NDArray64
 
 """
-Converts between xyz and polar/azimuth coordinates with the convention of N along y-axis and z along the down direction.
+Converts between xyz and polar/azimuth coordinates with the convention of N along -Y-axis and +Z down.
+
+               N, -Y
+             *********
+         *               *
+       *                   *
+      *                     *
+   -X *     ↑ -Z ↓ +Z       *  +X (declination = 90°)
+      *                     *
+       *                   *
+          *             *
+             *********
+               S, +Y (declination = 180°)
 """
 
 
@@ -62,10 +74,18 @@ def xyz2dim(xyz: ArrayLike) -> NDArray64:
 
 def xy2dec(xy: ArrayLike) -> NDArray64:
     """calculates declination from x,y data
+
+    The declination is defined as the angle between the negative
+    y-axis and the projection of the vector onto the x-y plane.
+
     Parameters
     ----------
     xy: ndarray (2,n)
         x,y values of n vectors [[x1,y1],[x2,y2],...]
+
+    Notes
+    -----
+    Declination is not defined for x = 0 and y = 0. This function returns 90° for these cases.
     """
     xy = np.atleast_2d(xy)
     x = xy[:, 0]

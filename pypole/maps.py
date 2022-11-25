@@ -1,10 +1,14 @@
 import typing
-from typing import Any, Tuple
+from typing import Any, Tuple, Union
+
+import logging
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from pypole import NDArray64, convert
+
+LOG = logging.getLogger(__name__)
 
 
 def get_random_sources(
@@ -31,10 +35,9 @@ def get_random_sources(
 
     Returns
     -------
-        ndarrays of location, source_vector, and total_vector
-            location: x_source, y_source, z_source
-            source_vector: x,y,z
-            total_vector: x,y,z
+        ndarrays of location and source_vector
+            location (n_sources, 3): x_source, y_source, z_source
+            source_vector (n_sources, 3): x,y,z components of dipole moment
 
     Notes
     -----
@@ -47,7 +50,7 @@ def get_random_sources(
     locations = locations.reshape(n_sources, 3)
 
     # calculate the x/y/z components
-    dim = get_random_dim(moment_range, n_sources)
+    dim = get_random_dim(n_sources, moment_range)
     xyz = convert.dim2xyz(dim)
 
     # reshape xyz to be (n_sources, (x,y,z))
@@ -56,7 +59,7 @@ def get_random_sources(
     return locations, source_vector
 
 
-def get_random_dim(moment_range, n_sources):
+def get_random_dim(n_sources, moment_range):
     """Generate randomly distributed dipole moments on the unit sphere
 
     Parameters
@@ -72,6 +75,13 @@ def get_random_dim(moment_range, n_sources):
     -------
     dim: ndarray
         dipole moments in (declination, inclination, moment) format
+
+    Examples
+    --------
+    >>> np.random.seed(0)
+    >>> get_random_dim(2,(1e-14, 1e-14))
+    >>> array([[ 1.97572861e+02, -1.18603363e+01,  1.00000000e-14], [ 2.57468172e+02, -5.15016644e+00,  1.00000000e-14]])
+
     """
     # get random declinations from uniform distribution (rand)
     declination = np.random.uniform(0, 360, n_sources)
@@ -100,6 +110,13 @@ def get_random_locations(n_sources, x_range, y_range, z_range):
     -------
     locations: ndarray
         x,y,z locations of sources
+
+    Examples
+    --------
+    >>> np.random.seed(0)
+    >>> get_random_locations(2, (-3e-6, 3e-6), (-3e-6, 3e-6), (1e-6, 4e-6))
+    >>> array([[2.92881024e-07, 6.16580256e-07, 2.27096440e-06],[1.29113620e-06, 2.69299098e-07, 2.93768234e-06]])
+
     """
 
     # get uniform distribution of x/y locations
@@ -110,7 +127,7 @@ def get_random_locations(n_sources, x_range, y_range, z_range):
 
 
 def get_grid(
-    pixels: int = 100, pixel_size: float = 5e-6
+    pixels: Union[tuple[int, int], int] = (100, 100), pixel_size: float = 5e-6
 ) -> tuple[NDArray64, NDArray64]:
     """Generate observation coordinates of the map
 
@@ -122,7 +139,15 @@ def get_grid(
         size of a single pixel (x/y are the same) in micron.
         defines: left map edge = -(pixel*pixel_size)/2, right map edge = (pixel*pixel_size)/2
     """
-    n_points = np.linspace(-pixels, pixels, pixels)
 
-    grid = np.ones((pixels, pixels)) * (n_points * pixel_size) / 2
-    return grid, grid.T
+    if isinstance(pixels, int):
+        LOG.warning(
+            f"pixels should be a tuple of (x,y) pixel size. Setting to ({pixels},{pixels})"
+        )
+        pixels = (pixels, pixels)
+
+    x_points = np.linspace(-pixels[0], pixels[0], pixels[0]) * pixel_size / 2
+    y_points = np.linspace(-pixels[1], pixels[1], pixels[1]) * pixel_size / 2
+
+    x_grid, y_grid = np.meshgrid(x_points, y_points)
+    return x_grid.astype(np.float64), y_grid.astype(np.float64)
