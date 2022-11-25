@@ -17,7 +17,7 @@ def compare_maps(map1: NDArray64, map2: NDArray64, title: str = "") -> None:
         None
     """
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 3))
     fig.suptitle(title)
 
     res = map1 - map2
@@ -41,6 +41,7 @@ def compare_maps(map1: NDArray64, map2: NDArray64, title: str = "") -> None:
     ax[2].set(title="residual", xlabel="px", ylabel="px")
 
     plt.colorbar(l, cax=ax.cbar_axes[0], label="B [T]")
+    plt.tight_layout()
     plt.show()
 
     print(f"residual: max: {np.max(res):.2e} std: {np.std(res):.2e} T")
