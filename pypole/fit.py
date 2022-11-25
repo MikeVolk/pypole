@@ -2,7 +2,6 @@ import typing
 
 import numba
 import numpy as np
-import tqdm
 from numpy.typing import ArrayLike, NDArray
 from scipy.optimize import least_squares
 
@@ -32,15 +31,13 @@ def fit_dipole_n_maps(
     n_maps = b_maps.shape[0]
     best_fit_dipoles = np.empty((n_maps, 6))
 
-    with tqdm.tqdm(total=n_maps, unit="fit", ncols=80) as pbar:
-        for map_index in numba.prange(n_maps):
-            best_fit_dipoles[map_index, :] = _fit_dipole(
-                b_map=b_maps[map_index],
-                p0=initial_guess[map_index],
-                x_grid=x_grid,
-                y_grid=y_grid,
-            )
-            pbar.update(1)
+    for map_index in numba.prange(n_maps):
+        best_fit_dipoles[map_index, :] = _fit_dipole(
+            b_map=b_maps[map_index],
+            p0=initial_guess[map_index],
+            x_grid=x_grid,
+            y_grid=y_grid,
+        )
     return best_fit_dipoles
 
 
