@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pypole"
-version = "0.1.1"
+version = "0.1.1b"
 description = "Awesome `pypole` is a Python cli/package created with https://github.com/TezRomacH/python-package-template"
 readme = "README.md"
 authors = ["pypole <michaelvolk1979@gmail.com>"]
@@ -27,37 +27,31 @@ classifiers = [  #! Update me
   "Programming Language :: Python :: 3.9",
 ]
 
-[tool.poetry.scripts]
-# Entry points for the package https://python-poetry.org/docs/pyproject/#scripts
-"pypole" = "pypole.__main__:app"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-rich = "^10.14.0"
 numpy = "^1.23.4"
 scipy = "^1.9.3"
 numba = "^0.56.4"
-tqdm = "^4.64.1"
 matplotlib = "^3.6.2"
-pre-commit = "^2.20.0"
 
 [tool.poetry.dev-dependencies]
-bandit = "^1.7.1"
-black = "^22.10.0"
-darglint = "^1.8.1"
-isort = {extras = ["colors"], version = "^5.10.1"}
-mypy = "^0.991"
-mypy-extensions = "^0.4.3"
-pre-commit = "^2.15.0"
-pydocstyle = "^6.1.1"
-pylint = "^2.11.1"
-pytest = "^6.2.5"
-pyupgrade = "^2.29.1"
-safety = "^1.10.3"
-coverage = "^6.1.2"
-coverage-badge = "^1.1.0"
-pytest-cov = "^3.0.0"
-jupyterlab = "^3.5.0"
+bandit = "*"
+black = "*"
+darglint = "*"
+isort = "*"
+mypy = "*"
+mypy-extensions = "*"
+pre-commit = "*"
+pydocstyle = "*"
+pylint = "*"
+pytest = "*"
+pyupgrade = "*"
+safety = "*"
+coverage = "*"
+coverage-badge = "*"
+pytest-cov = "*"
+jupyterlab = "*"
 
 [tool.black]
 # https://github.com/psf/black
