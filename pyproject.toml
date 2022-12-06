@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pypole"
-version = "0.1.0"
+version = "0.1.1"
 description = "Awesome `pypole` is a Python cli/package created with https://github.com/TezRomacH/python-package-template"
 readme = "README.md"
 authors = ["pypole <michaelvolk1979@gmail.com>"]
