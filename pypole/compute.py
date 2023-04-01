@@ -107,7 +107,7 @@ def upward_continue(
         array([[ 3.77615757,  3.38899885],
                [ 4.74852508,  4.26136635]])
     """
-    init_shape = field_map.shape
+    ypix, xpix = field_map.shape
 
     # pad the magnetic field map with zeros
     field_map = pad_map(field_map, oversample)
@@ -121,7 +121,7 @@ def upward_continue(
     ky = 2 * np.pi * fgrid_y
     k = np.sqrt(kx**2 + ky**2)
 
-    # Calculate the filter frequency response
+    # Calculate the filter frequency response associated with the x component
     filter_response = np.exp(-distance * k)
 
     # Compute the FFT of the magnetic field map
@@ -134,14 +134,14 @@ def upward_continue(
     filtered_map = np.fft.ifft2(fft_filtered_map).real
 
     # Crop the map to remove zero padding
-    xcrop_start = (oversample-1) * init_shape[1]
-    xcrop_end = xcrop_start + init_shape[1]
-    ycrop_start = (oversample-1) * init_shape[0]
-    ycrop_end = ycrop_start + init_shape[0]
+    xcrop_start = (oversample-1) * ypix
+    xcrop_end = xcrop_start + xpix
+    ycrop_start = (oversample-1) * ypix
+    ycrop_end = ycrop_start + xpix
 
-    filtered_map = filtered_map[ycrop_start:ycrop_end, xcrop_start:xcrop_end]
+    # Crop matrices to get rid of zero padding
 
-    return filtered_map
+    return filtered_map[ycrop_start:ycrop_end, xcrop_start:xcrop_end]
 
 
 
