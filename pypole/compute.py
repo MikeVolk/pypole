@@ -46,11 +46,17 @@ def dipolarity_param(data_map: NDArray64, fitted_map: NDArray64) -> np.float64:
     “High-Sensitivity Moment Magnetometry With the Quantum Diamond Microscope.”
     Geochemistry, Geophysics, Geosystems 21, no. 8 (2020): e2020GC009147. https://doi.org/10/ghfpqv.
     """
-    residual: fitted_map - data_map
+
+    if data_map.shape != fitted_map.shape:
+        raise ValueError("The shapes of the input arrays do not match.")
+
+    residual: NDArray64 = fitted_map - data_map
     return 1 - (rms(residual) / rms(data_map))
 
 
-@guvectorize([(float64[:, :], float64[:])], '(m,n)->()', target="parallel", nopython=True)
+@guvectorize(
+    [(float64[:, :], float64[:])], "(m,n)->()", target="parallel", nopython=True
+)
 def rms(b_map: NDArray64, result: NDArray64) -> None:
     """
     Calculate the root mean square (RMS) of a magnetic field map or a collection of maps.
