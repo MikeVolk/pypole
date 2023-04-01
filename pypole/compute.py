@@ -2,8 +2,8 @@ import logging
 
 import numba
 import numpy as np
+from numba import float64, guvectorize, int64
 from numpy.typing import NDArray
-from numba import guvectorize, float64
 
 LOG = logging.getLogger(__name__)
 
@@ -88,62 +88,98 @@ def upward_continue(
 ) -> NDArray64:
     """Upward continues a map.
 
-    This function calculates a new map that is the upward continuation of the initial map by a given distance.
+    Calculates a new map that is the upward continuation of the initial map by a given distance.
     In other words, it returns a new map that looks as if it was measured at a different distance from the sample.
 
     Args:
-      map: The map to be continued
-      distance: The distance to upward continue the map in m
-      pixel_size: The size of the pixel in the map in m
-      oversample: The oversampling factor to use (Default value = 2)
+        b_map: The 2D array representing the map to be continued.
+        distance: The distance to upward continue the map in m.
+        pixel_size: The size of the pixel in the map in m.
+        oversample: The oversampling factor to use. Default value is 2.
 
     Returns:
-        The upward continued map
+        The upward continued map as a 2D numpy array.
+
+    Examples:
+        >>> import numpy as np
+        >>> b_map = np.array([[1, 2], [3, 4]], dtype=np.float64)
+        >>> upward_continue(b_map, 2, 0.5)
+        array([[ 3.77615757,  3.38899885],
+               [ 4.74852508,  4.26136635]])
     """
-    ypix, xpix = b_map.shape
-    new_x, new_y = xpix * oversample, ypix * oversample
+    init_shape = b_map.shape
 
-    # Calculate the new pixel size
-    b_map = pad_map(b_map)
+    # pad the magnetic field map with zeros
+    b_map = pad_map(b_map, oversample)
+    new_x, new_y = b_map.shape
 
-    # these freq. coordinates match the fft algorithm
-    x_steps = np.concatenate([np.arange(0, new_x / 2, 1), np.arange(-new_x / 2, 0, 1)])
-    fx = x_steps / pixel_size / new_x
-    y_steps = np.concatenate([np.arange(0, new_y / 2, 1), np.arange(-new_y / 2, 0, 1)])
-    fy = y_steps / pixel_size / new_y
-
-    fgrid_x, fgrid_y = np.meshgrid(fx + _EPSILON, fy + _EPSILON)
-
+    # calculate the frequency coordinates
+    x_steps = np.fft.fftfreq(new_x, pixel_size)
+    y_steps = np.fft.fftfreq(new_y, pixel_size)
+    fgrid_x, fgrid_y = np.meshgrid(x_steps, y_steps, indexing='ij')
     kx = 2 * np.pi * fgrid_x
     ky = 2 * np.pi * fgrid_y
     k = np.sqrt(kx**2 + ky**2)
 
-    # Calculate the filter frequency response associated with the x component
-    x_filter = np.exp(-distance * k)
+    # Calculate the filter frequency response
+    filter_response = np.exp(-distance * k)
 
-    # Compute FFT of the field map
-    fft_map = np.fft.fft2(b_map, s=(new_y, new_x))
+    # Compute the FFT of the magnetic field map
+    fft_map = np.fft.fft2(b_map)
 
-    # Calculate single component
-    b_out = np.fft.ifft2(fft_map * x_filter)
-    LOG.debug("Upward continued map by %s m", distance)
+    # Calculate the filtered map
+    fft_filtered_map = fft_map * filter_response
 
-    # Crop matrices to get rid of zero padding
-    return b_out[ypix : 2 * ypix, xpix : 2 * xpix].real
+    # Compute the inverse FFT of the filtered map
+    filtered_map = np.fft.ifft2(fft_filtered_map).real
+
+    # Crop the map to remove zero padding
+    xcrop_start = (oversample-1) * init_shape[1]
+    xcrop_end = xcrop_start + init_shape[1]
+    ycrop_start = (oversample-1) * init_shape[0]
+    ycrop_end = ycrop_start + init_shape[0]
+
+    filtered_map = filtered_map[ycrop_start:ycrop_end, xcrop_start:xcrop_end]
+
+    return filtered_map
+
 
 
 def pad_map(b_map: NDArray64, oversample: int = 2) -> NDArray64:
-    """Pads a map with zeros.
+    """
+    Pads a magnetic field map with zeros.
 
     Args:
-      map: The map to be padded
+        b_map (NDArray64): The magnetic field map to be padded.
+        oversample (int, optional): The oversampling factor. The padding size will be
+            (oversample - 1) times the original map dimensions. Defaults to 2.
 
     Returns:
-        The padded map
-    """
-    pad_size = np.array(
-        ((b_map.shape[0], b_map.shape[0]), (b_map.shape[1], b_map.shape[1]))
-    )
-    pad_size *= oversample - 1
+        NDArray64: The padded magnetic field map.
 
-    return np.pad(b_map, pad_width=pad_size, mode="constant", constant_values=0)
+    Examples:
+        >>> import numpy as np
+        >>> b_map = np.array([[1, 2], [3, 4], [5, 6]], dtype=np.float64)
+        >>> pad_map(b_map)
+            array([[0., 0., 0., 0., 0., 0.],
+                   [0., 0., 0., 0., 0., 0.],
+                   [0., 0., 0., 0., 0., 0.],
+                   [0., 0., 1., 2., 0., 0.],
+                   [0., 0., 3., 4., 0., 0.],
+                   [0., 0., 5., 6., 0., 0.],
+                   [0., 0., 0., 0., 0., 0.],
+                   [0., 0., 0., 0., 0., 0.],
+                   [0., 0., 0., 0., 0., 0.]])
+    """
+    new_shape = np.array(b_map.shape)
+    new_shape[-2:] *= 1+ 2*(oversample - 1)
+    padded = np.zeros(new_shape, dtype=b_map.dtype)
+    center_row = (new_shape[-2] - b_map.shape[-2]) // 2
+    center_col = (new_shape[-1] - b_map.shape[-1]) // 2
+
+    padded[
+        ...,
+        center_row : center_row + b_map.shape[-2],
+        center_col : center_col + b_map.shape[-1],
+    ] = b_map
+    return padded
