@@ -42,6 +42,9 @@ def synthetic_map(
     return calculate_map(x_grid, y_grid, locations, source_vectors, sensor_distance)
 
 
+from numba import prange
+
+@numba.jit(parallel=True, fastmath=True)
 def calculate_map(
     x_grid: NDArray64,
     y_grid: NDArray64,
