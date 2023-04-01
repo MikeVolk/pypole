@@ -12,7 +12,7 @@ from pypole.dipole import dipole_field
 def fit_dipole_n_maps(
     x_grid: NDArray[np.float64],
     y_grid: NDArray[np.float64],
-    b_maps: NDArray[np.float64],
+    field_maps: NDArray[np.float64],
     initial_guess: NDArray[np.float64],
 ) -> NDArray[np.float64]:
     """fits a series of maps each with a single dipole.
@@ -23,17 +23,17 @@ def fit_dipole_n_maps(
         x grid
     y_grid : ndarray(pixel, pixel)
         y grid
-    b_maps : ndarray(n_maps, pixel, pixel)
+    field_maps : ndarray(n_maps, pixel, pixel)
         magnetic field map for all frames
     initial_guess : ndarray(n_maps, 3)
         initial guess for dipole parameters
     """
-    n_maps = b_maps.shape[0]
+    n_maps = field_maps.shape[0]
     best_fit_dipoles = np.empty((n_maps, 6))
 
     for map_index in numba.prange(n_maps):
         best_fit_dipoles[map_index, :] = _fit_dipole(
-            b_map=b_maps[map_index],
+            field_map=field_maps[map_index],
             p0=initial_guess[map_index],
             x_grid=x_grid,
             y_grid=y_grid,
@@ -94,12 +94,12 @@ def dipole_residual(
     return arr.ravel() - data
 
 
-def fit_dipole(b_map, p0, pixel_size=1):
+def fit_dipole(field_map, p0, pixel_size=1):
     """fits a single dipole to a magnetic field map
 
     Parameters
     ----------
-    b_map: ndarray
+    field_map: ndarray
         magnetic field map in Tesla
     p0: tuple(floats)
         initial guess for dipole parameters
@@ -112,16 +112,16 @@ def fit_dipole(b_map, p0, pixel_size=1):
         dipole parameters [x_source, y_source, z_source, mx, my, mz]
     """
 
-    x_grid, y_grid = maps.get_grid(pixels=b_map.shape, pixel_size=pixel_size)
-    return _fit_dipole(b_map, p0, x_grid, y_grid)
+    x_grid, y_grid = maps.get_grid(pixels=field_map.shape, pixel_size=pixel_size)
+    return _fit_dipole(field_map, p0, x_grid, y_grid)
 
 
-def _fit_dipole(b_map, p0, x_grid, y_grid):
+def _fit_dipole(field_map, p0, x_grid, y_grid):
     grid = np.vstack((y_grid.ravel(), x_grid.ravel()))
     return least_squares(
         dipole_residual,
         p0,
-        args=(grid, b_map.T.ravel()),
+        args=(grid, field_map.T.ravel()),
         loss="huber",
         method="trf",
         gtol=2.3e-16,

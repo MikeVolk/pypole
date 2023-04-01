@@ -12,7 +12,7 @@ from pypole import NDArray64
 _EPSILON = 1e-50
 
 
-def dipolarity_param(data_map: NDArray64, fitted_map: NDArray64) -> np.float64:
+def dipolarity_param(field_map: NDArray64, fitted_map: NDArray64) -> np.float64:
     """
     Calculate the dipolarity parameter of a magnetic dipole field.
 
@@ -21,7 +21,7 @@ def dipolarity_param(data_map: NDArray64, fitted_map: NDArray64) -> np.float64:
     DP was first introduced by [1]_.
 
     Args:
-        data_map (NDArray64): Original magnetic field map.
+        field_map (NDArray64): Original magnetic field map.
         fitted_map (NDArray64): Fitted magnetic field map.
 
     Returns:
@@ -32,11 +32,11 @@ def dipolarity_param(data_map: NDArray64, fitted_map: NDArray64) -> np.float64:
 
     Examples:
         >>> import numpy as np
-        >>> data_map = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+        >>> field_map = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
         >>> fitted_map = np.array([[1.2, 1.8], [3.1, 3.9], [4.8, 6.1]])
-        >>> dipolarity_param(data_map, fitted_map)
+        >>> dipolarity_param(field_map, fitted_map)
         0.9594001028529425
-        >>> dipolarity_param(np.array([data_map, data_map]),
+        >>> dipolarity_param(np.array([field_map, field_map]),
                              np.array([fitted_map, fitted_map]))
         array([0.9594001 , 0.9594001 ])
 
@@ -47,22 +47,22 @@ def dipolarity_param(data_map: NDArray64, fitted_map: NDArray64) -> np.float64:
     Geochemistry, Geophysics, Geosystems 21, no. 8 (2020): e2020GC009147. https://doi.org/10/ghfpqv.
     """
 
-    if data_map.shape != fitted_map.shape:
+    if field_map.shape != fitted_map.shape:
         raise ValueError("The shapes of the input arrays do not match.")
 
-    residual: NDArray64 = fitted_map - data_map
-    return 1 - (rms(residual) / rms(data_map))
+    residual: NDArray64 = fitted_map - field_map
+    return 1 - (rms(residual) / rms(field_map))
 
 
 @guvectorize(
     [(float64[:, :], float64[:])], "(m,n)->()", target="parallel", nopython=True
 )
-def rms(b_map: NDArray64, result: NDArray64) -> None:
+def rms(field_map: NDArray64, result: NDArray64) -> None:
     """
     Calculate the root mean square (RMS) of a magnetic field map or a collection of maps.
 
     Args:
-        b_map (NDArray64): Magnetic field map to calculate the RMS of. The input can be a 2D array representing a single map,
+        field_map (NDArray64): Magnetic field map to calculate the RMS of. The input can be a 2D array representing a single map,
                            or a 3D array representing multiple maps.
 
     Returns:
@@ -71,20 +71,20 @@ def rms(b_map: NDArray64, result: NDArray64) -> None:
 
     Examples:
         >>> import numpy as np
-        >>> b_map_2d = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
-        >>> rms(b_map_2d)
+        >>> field_map_2d = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+        >>> rms(field_map_2d)
         3.8944404818493075
 
-        >>> b_map_3d = np.array([[[1.0, 2.0], [3.0, 4.0]], [[5.0, 6.0], [7.0, 8.0]]])
-        >>> rms(b_map_3d)
+        >>> field_map_3d = np.array([[[1.0, 2.0], [3.0, 4.0]], [[5.0, 6.0], [7.0, 8.0]]])
+        >>> rms(field_map_3d)
         array([2.73861279, 6.59545298])
     """
 
-    result[0] = np.sqrt(np.mean(np.square(b_map)))
+    result[0] = np.sqrt(np.mean(np.square(field_map)))
 
 
 def upward_continue(
-    b_map: NDArray64, distance: float, pixel_size: float, oversample: int = 2
+    field_map: NDArray64, distance: float, pixel_size: float, oversample: int = 2
 ) -> NDArray64:
     """Upward continues a map.
 
@@ -92,7 +92,7 @@ def upward_continue(
     In other words, it returns a new map that looks as if it was measured at a different distance from the sample.
 
     Args:
-        b_map: The 2D array representing the map to be continued.
+        field_map: The 2D array representing the map to be continued.
         distance: The distance to upward continue the map in m.
         pixel_size: The size of the pixel in the map in m.
         oversample: The oversampling factor to use. Default value is 2.
@@ -102,16 +102,16 @@ def upward_continue(
 
     Examples:
         >>> import numpy as np
-        >>> b_map = np.array([[1, 2], [3, 4]], dtype=np.float64)
-        >>> upward_continue(b_map, 2, 0.5)
+        >>> field_map = np.array([[1, 2], [3, 4]], dtype=np.float64)
+        >>> upward_continue(field_map, 2, 0.5)
         array([[ 3.77615757,  3.38899885],
                [ 4.74852508,  4.26136635]])
     """
-    init_shape = b_map.shape
+    init_shape = field_map.shape
 
     # pad the magnetic field map with zeros
-    b_map = pad_map(b_map, oversample)
-    new_x, new_y = b_map.shape
+    field_map = pad_map(field_map, oversample)
+    new_x, new_y = field_map.shape
 
     # calculate the frequency coordinates
     x_steps = np.fft.fftfreq(new_x, pixel_size)
@@ -125,7 +125,7 @@ def upward_continue(
     filter_response = np.exp(-distance * k)
 
     # Compute the FFT of the magnetic field map
-    fft_map = np.fft.fft2(b_map)
+    fft_map = np.fft.fft2(field_map)
 
     # Calculate the filtered map
     fft_filtered_map = fft_map * filter_response
@@ -145,12 +145,12 @@ def upward_continue(
 
 
 
-def pad_map(b_map: NDArray64, oversample: int = 2) -> NDArray64:
+def pad_map(field_map: NDArray64, oversample: int = 2) -> NDArray64:
     """
     Pads a magnetic field map with zeros.
 
     Args:
-        b_map (NDArray64): The magnetic field map to be padded.
+        field_map (NDArray64): The magnetic field map to be padded.
         oversample (int, optional): The oversampling factor. The padding size will be
             (oversample - 1) times the original map dimensions. Defaults to 2.
 
@@ -159,8 +159,8 @@ def pad_map(b_map: NDArray64, oversample: int = 2) -> NDArray64:
 
     Examples:
         >>> import numpy as np
-        >>> b_map = np.array([[1, 2], [3, 4], [5, 6]], dtype=np.float64)
-        >>> pad_map(b_map)
+        >>> field_map = np.array([[1, 2], [3, 4], [5, 6]], dtype=np.float64)
+        >>> pad_map(field_map)
             array([[0., 0., 0., 0., 0., 0.],
                    [0., 0., 0., 0., 0., 0.],
                    [0., 0., 0., 0., 0., 0.],
@@ -171,15 +171,15 @@ def pad_map(b_map: NDArray64, oversample: int = 2) -> NDArray64:
                    [0., 0., 0., 0., 0., 0.],
                    [0., 0., 0., 0., 0., 0.]])
     """
-    new_shape = np.array(b_map.shape)
+    new_shape = np.array(field_map.shape)
     new_shape[-2:] *= 1+ 2*(oversample - 1)
-    padded = np.zeros(new_shape, dtype=b_map.dtype)
-    center_row = (new_shape[-2] - b_map.shape[-2]) // 2
-    center_col = (new_shape[-1] - b_map.shape[-1]) // 2
+    padded = np.zeros(new_shape, dtype=field_map.dtype)
+    center_row = (new_shape[-2] - field_map.shape[-2]) // 2
+    center_col = (new_shape[-1] - field_map.shape[-1]) // 2
 
     padded[
         ...,
-        center_row : center_row + b_map.shape[-2],
-        center_col : center_col + b_map.shape[-1],
-    ] = b_map
+        center_row : center_row + field_map.shape[-2],
+        center_col : center_col + field_map.shape[-1],
+    ] = field_map
     return padded

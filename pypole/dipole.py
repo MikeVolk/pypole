@@ -31,7 +31,7 @@ def synthetic_map(
 
     Returns
     -------
-    b_map : ndarray(pixels, pixels)
+    field_map : ndarray(pixels, pixels)
         magnetic field map
     """
     # get the map grid in meters
