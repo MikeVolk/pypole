@@ -1,3 +1,67 @@
+"""
+dipole.py
+==========
+
+This module provides functions for computing the magnetic field of a magnetic dipole
+point source.
+
+Functions
+---------
+dipole_field(x_grid, y_grid, x_source, y_source, z_observed, mx, my, mz):
+    Compute the magnetic field of a magnetic dipole point source at given locations.
+
+    Parameters:
+        x_grid (ndarray): The x-coordinates of the observation points on a grid
+        y_grid (ndarray): The y-coordinates of the observation points on a grid
+        x_source (float): The x-coordinate of the dipole source
+        y_source (float): The y-coordinate of the dipole source
+        z_observed (ndarray): The z-coordinate of the observation points, including the
+            sensor height
+        mx (float): The x-component of the magnetic dipole moment vector in Am^2
+        my (float): The y-component of the magnetic dipole moment vector in Am^2
+        mz (float): The z-component of the magnetic dipole moment vector in Am^2
+
+    Returns:
+        ndarray: The magnetic field at the observation points
+
+    Note:
+        The units of the magnetic field are Tesla (T).
+
+convert_vector(x, y, z, declination, inclination):
+    Convert from the (x, y, z) representation of a magnetic dipole moment vector to the
+    (mx, my, mz) representation.
+
+    Parameters:
+        x (float): The x-component of the magnetic dipole moment vector
+        y (float): The y-component of the magnetic dipole moment vector
+        z (float): The z-component of the magnetic dipole moment vector
+        declination (float): The declination of the dipole moment vector in degrees
+        inclination (float): The inclination of the dipole moment vector in degrees
+
+    Returns:
+        tuple: The (mx, my, mz) representation of the magnetic dipole moment vector in Am^2
+
+    Note:
+        The declination and inclination angles are in the range [-180, 180] degrees.
+
+dim2xyz(dim):
+    Convert from the (declination, inclination, moment) representation of a magnetic
+    dipole moment vector to the (x, y, z) representation.
+
+    Parameters:
+        dim (ndarray): The (declination, inclination, moment) representation of a
+        magnetic dipole moment vector
+
+    Returns:
+        ndarray: The (x, y, z) representation of the magnetic dipole moment vector
+
+    Note:
+        The declination and inclination angles are in the range [0, 360] and [-90,90] degrees.
+        The units of the magnetic moment are Am^2.
+
+"""
+
+
 from typing import Any, Tuple
 
 import itertools
