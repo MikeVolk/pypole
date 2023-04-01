@@ -3,6 +3,7 @@ import logging
 import numba
 import numpy as np
 from numpy.typing import NDArray
+from numba import guvectorize, float64
 
 LOG = logging.getLogger(__name__)
 
@@ -35,16 +36,31 @@ def dipolarity_param(data_map: NDArray64, fitted_map: NDArray64) -> np.float64:
     return 1 - (rms(residual) / rms(data_map))
 
 
-def rms(b_map: NDArray64) -> np.float64:
-    """Calculate the root mean square of a map.
+@guvectorize([(float64[:, :], float64[:])], '(m,n)->()', target="parallel", nopython=True)
+def rms(b_map: NDArray64, result: NDArray64) -> None:
+    """
+    Calculate the root mean square (RMS) of a magnetic field map or a collection of maps.
 
     Args:
-      b_map: Map to calculate the RMS of
+        b_map (NDArray64): Magnetic field map to calculate the RMS of. The input can be a 2D array representing a single map,
+                           or a 3D array representing multiple maps.
 
     Returns:
-        float: RMS of the map
+        np.float64: RMS of the magnetic field map(s). If the input is a 3D array, the output is a 1D array containing the RMS
+                    of each map.
+
+    Examples:
+        >>> import numpy as np
+        >>> b_map_2d = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+        >>> rms(b_map_2d)
+        3.8944404818493075
+
+        >>> b_map_3d = np.array([[[1.0, 2.0], [3.0, 4.0]], [[5.0, 6.0], [7.0, 8.0]]])
+        >>> rms(b_map_3d)
+        array([2.73861279, 6.59545298])
     """
-    return np.sqrt(np.mean(np.square(b_map))).astype(np.float64)
+
+    result[0] = np.sqrt(np.mean(np.square(b_map)))
 
 
 def upward_continue(
