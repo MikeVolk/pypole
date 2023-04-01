@@ -1,8 +1,42 @@
+"""
+compute.py
+-----------
+
+This module contains functions for computing magnetic field maps and performing
+operations on them.
+
+Functions:
+- pad_map(b_map: NDArray64, oversample: int = 2) -> NDArray64:
+    Pads a magnetic field map with zeros on all sides.
+- dipolarity_param(mag_map: NDArray64, distance: float, pixel_size: float,
+  oversample: int = 2) -> NDArray64:
+    Calculates the dipolarity parameter of a magnetic field map.
+- rms(b_map: NDArray64) -> float:
+    Calculates the root mean square of a magnetic field map.
+- upward_continue(b_map: NDArray64, distance: float, pixel_size: float,
+  oversample: int = 2) -> NDArray64:
+    Upward continues a magnetic field map by a given distance.
+
+The `pad_map` function pads a magnetic field map with zeros on all sides to increase its
+size. This can be useful, for example, when preparing a map for upward continuation.
+
+The `dipolarity_param` function calculates the dipolarity parameter of a magnetic field
+map, which is a measure of the strength of the magnetic field sources. This function can
+be used, for example, to quantify the magnetic field strength of a sample.
+
+The `rms` function calculates the root mean square of a magnetic field map, which is a
+measure of the overall strength of the magnetic field. This function can be used, for
+example, to compare the strength of magnetic fields in different regions of a sample.
+
+The `upward_continue` function upward continues a magnetic field map by a given
+distance. This can be useful, for example, when simulating the magnetic field of a
+sample at a different distance than the one at which it was measured.
+"""
+
 import logging
 
-import numba
 import numpy as np
-from numba import float64, guvectorize, int64
+from numba import float64, guvectorize
 from numpy.typing import NDArray
 
 LOG = logging.getLogger(__name__)
@@ -116,10 +150,10 @@ def upward_continue(
     # calculate the frequency coordinates
     x_steps = np.fft.fftfreq(new_x, pixel_size)
     y_steps = np.fft.fftfreq(new_y, pixel_size)
-    fgrid_x, fgrid_y = np.meshgrid(x_steps, y_steps, indexing='ij')
+    fgrid_x, fgrid_y = np.meshgrid(x_steps, y_steps)
     kx = 2 * np.pi * fgrid_x
     ky = 2 * np.pi * fgrid_y
-    k = np.sqrt(kx**2 + ky**2)
+    k = np.sqrt(kx**2 + ky**2).T
 
     # Calculate the filter frequency response associated with the x component
     filter_response = np.exp(-distance * k)
@@ -134,15 +168,13 @@ def upward_continue(
     filtered_map = np.fft.ifft2(fft_filtered_map).real
 
     # Crop the map to remove zero padding
-    xcrop_start = (oversample-1) * ypix
+    xcrop_start = (oversample-1) * xpix
     xcrop_end = xcrop_start + xpix
     ycrop_start = (oversample-1) * ypix
-    ycrop_end = ycrop_start + xpix
+    ycrop_end = ycrop_start + ypix
 
     # Crop matrices to get rid of zero padding
-
     return filtered_map[ycrop_start:ycrop_end, xcrop_start:xcrop_end]
-
 
 
 def pad_map(field_map: NDArray64, oversample: int = 2) -> NDArray64:
