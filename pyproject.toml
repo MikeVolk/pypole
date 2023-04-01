@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pypole"
-version = "0.1.0"
+version = "0.1.1"
 description = "Awesome `pypole` is a Python cli/package created with https://github.com/TezRomacH/python-package-template"
 readme = "README.md"
 authors = ["pypole <michaelvolk1979@gmail.com>"]
@@ -19,7 +19,7 @@ keywords = []  #! Update me
 # Pypi classifiers: https://pypi.org/classifiers/
 classifiers = [  #! Update me
   "Development Status :: 3 - Alpha",
-  "Intended Audience :: Scientist",
+  "Intended Audience :: Education",
   "Operating System :: OS Independent",
   "Topic :: Scientific/Engineering :: Physics",
   "License :: OSI Approved :: MIT License",
@@ -125,7 +125,7 @@ warn_unused_ignores = true
 [tool.pytest.ini_options]
 # https://docs.pytest.org/en/6.2.x/customize.html#pyproject-toml
 # Directories that are not visited by pytest collector:
-pythonpath = ["."]
+# pythonpath = ["."]
 norecursedirs =["hooks", "*.egg", ".eggs", "dist", "build", "docs", ".tox", ".git", "__pycache__"]
 doctest_optionflags = ["NUMBER", "NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
 
