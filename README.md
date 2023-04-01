@@ -1,7 +1,6 @@
 # pypole
 
-A Python package for calculating magnetic field maps from magnetic dipoles.
-
+The "pypole" package is a Python library that provides tools for simulating and fitting magnetic field maps from magnetic dipoles. It includes functions for generating random dipole parameters, calculating magnetic fields, and fitting dipoles to magnetic field maps using least squares regression. The package uses numpy and numba for fast numerical computations, and includes several helper functions for visualizing magnetic field maps and comparing fits.
 ## Installation
 
 `pypole` uses [Poetry](https://python-poetry.org/) for package management. To install `pypole`, follow these steps:
@@ -27,7 +26,28 @@ poetry install
 
 ## Usage
 
-Provide a brief description of how to use your package or include examples. You can refer to the example.py file for this purpose.
+To use the "pypole" package, you can import its modules and call its functions as needed. Here is an example of how to generate a magnetic field map and fit a dipole to it:
+
+```python
+import pypole.maps as maps
+import pypole.fit as fit
+
+# Generate a magnetic field map
+x_grid, y_grid = maps.get_grid(pixels=(100, 100), pixel_size=5e-6)
+locations, source_vectors = maps.get_random_sources(n_sources=1)
+field_map = maps.calculate_map(x_grid, y_grid, locations, source_vectors)
+
+# Fit a dipole to the magnetic field map
+initial_guess = (0, 0, 1e-6, 1e-14, 1e-14, 1e-14)
+fit_params = fit.fit_dipole(field_map, initial_guess, pixel_size=5e-6)
+
+# Print the fit parameters
+print(fit_params)
+```
+Documentation
+---------------
+
+The "pypole" package includes docstrings and comments for each function, as well as examples of usage. To access the documentation for a specific function, you can use Python's built-in help() function:
 
 ## Contributing
 
