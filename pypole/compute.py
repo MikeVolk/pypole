@@ -13,18 +13,32 @@ _EPSILON = 1e-50
 
 
 def dipolarity_param(data_map: NDArray64, fitted_map: NDArray64) -> np.float64:
-    """Calculate the dipolarity parameter of a magnetic dipole field.
+    """
+    Calculate the dipolarity parameter of a magnetic dipole field.
 
     The dipolarity parameter (DP) is defined as the ratio of the rms of the
     residual (fitted_map - map) to the rms of the data map.
     DP was first introduced by [1]_.
 
     Args:
-      data_map: magnetic field map
-      fitted_map: fitted magnetic field map
+        data_map (NDArray64): Original magnetic field map.
+        fitted_map (NDArray64): Fitted magnetic field map.
 
     Returns:
-      float: dipolarity parameter of the magnetic dipole field
+        np.float64: Dipolarity parameter of the magnetic dipole field.
+
+    Raises:
+        ValueError: If the shapes of the input arrays do not match.
+
+    Examples:
+        >>> import numpy as np
+        >>> data_map = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
+        >>> fitted_map = np.array([[1.2, 1.8], [3.1, 3.9], [4.8, 6.1]])
+        >>> dipolarity_param(data_map, fitted_map)
+        0.9594001028529425
+        >>> dipolarity_param(np.array([data_map, data_map]),
+                             np.array([fitted_map, fitted_map]))
+        array([0.9594001 , 0.9594001 ])
 
     References
     ----------
