@@ -127,27 +127,47 @@ def get_random_locations(n_sources, x_range, y_range, z_range):
 
 
 def get_grid(
-    pixels: Union[tuple[int, int], int] = (100, 100), pixel_size: float = 5e-6
-) -> tuple[NDArray64, NDArray64]:
-    """Generate observation coordinates of the map
+    pixels: Union[Tuple[int, int], int] = (100, 100), pixel_size: float = 5e-6
+) -> Tuple[NDArray64, NDArray64]:
+    """
+    Generate observation coordinates for a magnetic field map.
 
     Parameters
     ----------
-    n_pixel: int
-        number of grid points (i.e. pixel) in the map
-    pixel_size: float
-        size of a single pixel (x/y are the same) in micron.
-        defines: left map edge = -(pixel*pixel_size)/2, right map edge = (pixel*pixel_size)/2
-    """
+    pixels : Union[Tuple[int, int], int], optional
+        The number of grid points (i.e. pixels) in the map. If an integer is provided, it is used as the number of
+        pixels along both x and y axes. If a tuple of integers is provided, it is interpreted as (x_pixels, y_pixels).
+        The default is (100, 100).
+    pixel_size : float, optional
+        The size of a single pixel along both x and y axes in meters. The default is 5e-6.
 
+    Returns
+    -------
+    Tuple[NDArray64, NDArray64]
+        Two arrays of shape (pixels, pixels) representing the x and y coordinates of each pixel on the grid.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> x_grid, y_grid = get_grid(pixels=3, pixel_size=1)
+    >>> x_grid
+    array([[-1.,  0.,  1.],
+           [-1.,  0.,  1.],
+           [-1.,  0.,  1.]])
+    >>> y_grid
+    array([[-1., -1., -1.],
+           [ 0.,  0.,  0.],
+           [ 1.,  1.,  1.]])
+    """
     if isinstance(pixels, int):
         LOG.warning(
             f"pixels should be a tuple of (x,y) pixel size. Setting to ({pixels},{pixels})"
         )
         pixels = (pixels, pixels)
 
+    # Generate the x and y coordinates for each pixel on the grid
     x_points = np.linspace(-pixels[0], pixels[0], pixels[0]) * pixel_size / 2
     y_points = np.linspace(-pixels[1], pixels[1], pixels[1]) * pixel_size / 2
-
     x_grid, y_grid = np.meshgrid(x_points, y_points)
+
     return x_grid.astype(np.float64), y_grid.astype(np.float64)
