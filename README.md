@@ -1,53 +1,65 @@
 # pypole
 
-<div align="center">
-
-[![Build status](https://github.com/pypole/pypole/workflows/build/badge.svg?branch=master&event=push)](https://github.com/pypole/pypole/actions?query=workflow%3Abuild)
-[![Python Version](https://img.shields.io/pypi/pyversions/pypole.svg)](https://pypi.org/project/pypole/)
-[![Dependencies Status](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen.svg)](https://github.com/pypole/pypole/pulls?utf8=%E2%9C%93&q=is%3Apr%20author%3Aapp%2Fdependabot)
-
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Security: bandit](https://img.shields.io/badge/security-bandit-green.svg)](https://github.com/PyCQA/bandit)
-[![Pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pypole/pypole/blob/master/.pre-commit-config.yaml)
-[![Semantic Versions](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--versions-e10079.svg)](https://github.com/pypole/pypole/releases)
-[![License](https://img.shields.io/github/license/pypole/pypole)](https://github.com/pypole/pypole/blob/master/LICENSE)
-![Coverage Report](assets/images/coverage.svg)
-
-`pypole` is a Python package for simple fitting of magnetic dipoles to magnetic maps measured with Quantum diamond microscope or SQUID microscope
-
-</div>
-
+The "pypole" package is a Python library that provides tools for simulating and fitting magnetic field maps from magnetic dipoles. It includes functions for generating random dipole parameters, calculating magnetic fields, and fitting dipoles to magnetic field maps using least squares regression. The package uses numpy and numba for fast numerical computations, and includes several helper functions for visualizing magnetic field maps and comparing fits.
 ## Installation
 
-```bash
-pip install -U pypole
-```
+`pypole` uses [Poetry](https://python-poetry.org/) for package management. To install `pypole`, follow these steps:
 
-or install with `Poetry`
+1. Install Poetry if you haven't already:
 
 ```bash
-poetry add pypole
+pip install --user poetry
 ```
 
-## 🛡 License
+Clone the pypole repository from GitHub:
 
-[![License](https://img.shields.io/github/license/pypole/pypole)](https://github.com/pypole/pypole/blob/master/LICENSE)
+``` bash
+git clone https://github.com/MikeVolk/pypole.git
+``` 
 
-This project is licensed under the terms of the `MIT` license. See [LICENSE](https://github.com/pypole/pypole/blob/master/LICENSE) for more details.
+Navigate to the cloned pypole directory and install the package with Poetry:
 
-## 📃 Citation
-
-```bibtex
-@misc{pypole,
-  author = {pypole},
-  title = {Awesome `pypole` is a Python cli/package created with https://github.com/TezRomacH/python-package-template},
-  year = {2022},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  howpublished = {\url{https://github.com/pypole/pypole}}
-}
+```bash
+cd pypole
+poetry install
 ```
 
-## Credits [![🚀 Your next Python package needs a bleeding-edge project structure.](https://img.shields.io/badge/python--package--template-%F0%9F%9A%80-brightgreen)](https://github.com/TezRomacH/python-package-template)
+## Usage
 
-This project was generated with [`python-package-template`](https://github.com/TezRomacH/python-package-template)
+To use the "pypole" package, you can import its modules and call its functions as needed. Here is an example of how to generate a magnetic field map and fit a dipole to it:
+
+```python
+import pypole.maps as maps
+import pypole.fit as fit
+
+# Generate a magnetic field map
+x_grid, y_grid = maps.get_grid(pixels=(100, 100), pixel_size=5e-6)
+locations, source_vectors = maps.get_random_sources(n_sources=1)
+field_map = maps.calculate_map(x_grid, y_grid, locations, source_vectors)
+
+# Fit a dipole to the magnetic field map
+initial_guess = (0, 0, 1e-6, 1e-14, 1e-14, 1e-14)
+fit_params = fit.fit_dipole(field_map, initial_guess, pixel_size=5e-6)
+
+# Print the fit parameters
+print(fit_params)
+```
+Documentation
+---------------
+
+The "pypole" package includes docstrings and comments for each function, as well as examples of usage. To access the documentation for a specific function, you can use Python's built-in help() function:
+
+## Contributing
+
+If you're interested in contributing to the development of pypole, feel free to create a fork of the repository and submit a pull request with your changes.
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for more details.
+
+## Contact
+
+If you have any questions or suggestions, feel free to contact me:
+
+Email: michaelvolk1979@gmail.com
+GitHub: @MikeVolk

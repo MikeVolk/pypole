@@ -1,3 +1,67 @@
+"""
+dipole.py
+==========
+
+This module provides functions for computing the magnetic field of a magnetic dipole
+point source.
+
+Functions
+---------
+dipole_field(x_grid, y_grid, x_source, y_source, z_observed, mx, my, mz):
+    Compute the magnetic field of a magnetic dipole point source at given locations.
+
+    Parameters:
+        x_grid (ndarray): The x-coordinates of the observation points on a grid
+        y_grid (ndarray): The y-coordinates of the observation points on a grid
+        x_source (float): The x-coordinate of the dipole source
+        y_source (float): The y-coordinate of the dipole source
+        z_observed (ndarray): The z-coordinate of the observation points, including the
+            sensor height
+        mx (float): The x-component of the magnetic dipole moment vector in Am^2
+        my (float): The y-component of the magnetic dipole moment vector in Am^2
+        mz (float): The z-component of the magnetic dipole moment vector in Am^2
+
+    Returns:
+        ndarray: The magnetic field at the observation points
+
+    Note:
+        The units of the magnetic field are Tesla (T).
+
+convert_vector(x, y, z, declination, inclination):
+    Convert from the (x, y, z) representation of a magnetic dipole moment vector to the
+    (mx, my, mz) representation.
+
+    Parameters:
+        x (float): The x-component of the magnetic dipole moment vector
+        y (float): The y-component of the magnetic dipole moment vector
+        z (float): The z-component of the magnetic dipole moment vector
+        declination (float): The declination of the dipole moment vector in degrees
+        inclination (float): The inclination of the dipole moment vector in degrees
+
+    Returns:
+        tuple: The (mx, my, mz) representation of the magnetic dipole moment vector in Am^2
+
+    Note:
+        The declination and inclination angles are in the range [-180, 180] degrees.
+
+dim2xyz(dim):
+    Convert from the (declination, inclination, moment) representation of a magnetic
+    dipole moment vector to the (x, y, z) representation.
+
+    Parameters:
+        dim (ndarray): The (declination, inclination, moment) representation of a
+        magnetic dipole moment vector
+
+    Returns:
+        ndarray: The (x, y, z) representation of the magnetic dipole moment vector
+
+    Note:
+        The declination and inclination angles are in the range [0, 360] and [-90,90] degrees.
+        The units of the magnetic moment are Am^2.
+
+"""
+
+
 from typing import Any, Tuple
 
 import itertools
@@ -31,7 +95,7 @@ def synthetic_map(
 
     Returns
     -------
-    b_map : ndarray(pixels, pixels)
+    field_map : ndarray(pixels, pixels)
         magnetic field map
     """
     # get the map grid in meters
@@ -42,6 +106,9 @@ def synthetic_map(
     return calculate_map(x_grid, y_grid, locations, source_vectors, sensor_distance)
 
 
+from numba import prange
+
+@numba.jit(parallel=True, fastmath=True)
 def calculate_map(
     x_grid: NDArray64,
     y_grid: NDArray64,
@@ -82,7 +149,8 @@ def calculate_map(
     return np.sum(b, axis=0)
 
 
-@numba.jit(fastmath=True)
+
+@numba.njit(fastmath=True, parallel=True)
 def dipole_field(
     x_grid: NDArray64,
     y_grid: NDArray64,
@@ -93,33 +161,83 @@ def dipole_field(
     my: float,
     mz: float,
 ) -> NDArray64:
-    """Compute the field of a magnetic dipole point source
-
-    Parameters
-    ----------
-    x_source: ndarray (n_sources, 1)
-        x-locations of source
-    y_source:  ndarray (n_sources, 1)
-        y-locations of source
-    z_observed: ndarray(n_sources)
-        observed z distance, including the sensor height
-    x_grid:  ndarray(pixel, pixel)
-        grid to calculate the fields for
-    y_grid: ndarray(pixel, pixel)
-        grid to calculate the fields on
-    mx: ndarray(n_sources,)
-        x-component of vector in Am2
-    my: ndarray(n_sources,)
-        y-component of vector in Am2
-    mz: ndarray(n_sources,)
-        z-component of vector in Am2
     """
-    dgridx = np.subtract(x_grid, x_source)
-    dgridy = np.subtract(y_grid, y_source)
+    Computes the magnetic field of a magnetic dipole point source.
 
+    Parameters:
+    -----------
+    x_grid: ndarray, shape (pixel, pixel)
+        The x-coordinates of the grid to calculate the fields for.
+    y_grid: ndarray, shape (pixel, pixel)
+        The y-coordinates of the grid to calculate the fields for.
+    x_source: ndarray, shape (n_sources, )
+        The x-locations of the magnetic dipoles.
+    y_source: ndarray, shape (n_sources, )
+        The y-locations of the magnetic dipoles.
+    z_observed: ndarray, shape (n_sources, )
+        The z-coordinates of the sensor positions. The sensor height is included in this
+        value.
+    mx: ndarray, shape (n_sources, )
+        The x-component of the magnetic dipole moment vector in Am^2.
+    my: ndarray, shape (n_sources, )
+        The y-component of the magnetic dipole moment vector in Am^2.
+    mz: ndarray, shape (n_sources, )
+        The z-component of the magnetic dipole moment vector in Am^2.
+
+    Returns:
+    --------
+    ndarray, shape (pixel, pixel)
+        The magnetic field values at each (x, y) point on the grid.
+
+Returns
+    -------
+    NDArray64
+        The magnetic field generated by a dipole at each point on the grid.
+
+    Notes
+    -----
+    This function computes the magnetic field generated by a magnetic dipole point source.
+    The field is computed at each point on a 2D grid.
+
+    The formula used in this function is based on the dipole equation for magnetic field,
+    given by:
+
+    B = μ₀/4π * [(3(r * m)r - m(r.r)) / r^5]
+
+    where
+    B: Magnetic field
+    μ₀: Permeability of free space
+    r: Position vector
+    m: Magnetic moment
+    r.m: Dot product of position vector and magnetic moment
+
+    The formula has been modified to compute the field for a point source with a fixed
+    position and magnetic moment.
+
+    The units of input parameters are as follows:
+    - x_grid, y_grid, x_source, y_source: meters
+    - z_observed: meters above ground level
+    - mx, my, mz: Am^2
+
+    The unit of the output is Tesla (T).
+    """
+    # Calculate the distances between the grid points and the magnetic dipole sources
+    dgridx = x_grid - x_source
+    dgridy = y_grid - y_source
+
+    # Calculate the squared distance between the grid points and the magnetic dipole sources
     squared_distance = np.square(dgridx) + np.square(dgridy) + np.square(z_observed)
 
-    aux = mx * dgridx + my * dgridy + mz * z_observed
-    aux /= np.sqrt(np.power(squared_distance, 5.0))
-    aux = 3.0 * aux * z_observed
-    return 1e-7 * (aux - mz / np.sqrt(np.power(squared_distance, 3.0)))
+    # Calculate the dot product of the magnetic dipole moment vector and the distance vector
+    dot_product = mx * dgridx + my * dgridy + mz * z_observed
+
+    # Calculate the field due to the x and y components of the magnetic dipole moment vector
+    aux = dot_product / np.power(squared_distance, 5.0 / 2.0)
+    # bx = 3.0 * aux * dgridx
+    # by = 3.0 * aux * dgridy
+
+    # Calculate the field due to the z component of the magnetic dipole moment vector
+    bz = (3.0 * aux) * z_observed
+
+    # Combine the x, y, and z components of the field to get the total field
+    return 1e-7*bz
