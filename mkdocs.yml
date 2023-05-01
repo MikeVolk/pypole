@@ -14,19 +14,15 @@ theme:
         name: Switch to light mode
 
 nav:
-  - Introduction: 'index.md'
-
-markdown_extensions:
-  - pymdownx.snippets:
-      check_paths: true
+  - Home: /README.md
+  # - Usage: usage.md
+  - API Reference: api.md
 
 plugins:
-  - search:
+  - search
   - mkdocstrings:
+      default_handler: python
       handlers:
         python:
           rendering:
-            show_signature_annotations: true
             show_source: true
-      watch:
-        - pypole
