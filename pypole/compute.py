@@ -2,20 +2,29 @@
 compute.py
 -----------
 
-This module contains functions for computing magnetic field maps and performing
-operations on them.
+This module contains functions for computing magnetic field maps and performing operations on them.
 
 Functions:
-- pad_map(b_map: NDArray64, oversample: int = 2) -> NDArray64:
+- pad_map(field_map: NDArray64, oversample: int = 2) -> NDArray64:
     Pads a magnetic field map with zeros on all sides.
-- dipolarity_param(mag_map: NDArray64, distance: float, pixel_size: float,
+
+- dipolarity_param(field_map: NDArray64, fitted_map: NDArray64) -> np.float64:
+    Calculates the dipolarity parameter of a magnetic dipole field. The dipolarity
+    parameter (DP) is defined as the ratio of the rms of the residual (fitted_map -
+    map) to the rms of the data map. DP is a measure of the strength of the magnetic
+    field sources.
+
+- rms(field_map: NDArray64) -> float:
+    Calculates the root mean square (RMS) of a magnetic field map or a collection of maps.
+    If the input is a 2D array, the output is a scalar; if the input is a 3D array, the
+    output is a 1D array containing the RMS of each map.
+
+- upward_continue(field_map: NDArray64, distance: float, pixel_size: float,
   oversample: int = 2) -> NDArray64:
-    Calculates the dipolarity parameter of a magnetic field map.
-- rms(b_map: NDArray64) -> float:
-    Calculates the root mean square of a magnetic field map.
-- upward_continue(b_map: NDArray64, distance: float, pixel_size: float,
-  oversample: int = 2) -> NDArray64:
-    Upward continues a magnetic field map by a given distance.
+    Calculates a new map that is the upward continuation of the initial map by a given
+    distance. Upward continuation is a technique used in magnetic field mapping to
+    simulate the magnetic field of a sample at a different distance than the one at which
+    it was measured.
 
 The `pad_map` function pads a magnetic field map with zeros on all sides to increase its
 size. This can be useful, for example, when preparing a map for upward continuation.
@@ -88,9 +97,7 @@ def dipolarity_param(field_map: NDArray64, fitted_map: NDArray64) -> np.float64:
     return 1 - (rms(residual) / rms(field_map))
 
 
-@guvectorize(
-    [(float64[:, :], float64[:])], "(m,n)->()", target="parallel", nopython=True
-)
+@guvectorize([(float64[:, :], float64[:])], "(m,n)->()", target="parallel", nopython=True)
 def rms(field_map: NDArray64, result: NDArray64) -> None:
     """
     Calculate the root mean square (RMS) of a magnetic field map or a collection of maps.
@@ -168,9 +175,9 @@ def upward_continue(
     filtered_map = np.fft.ifft2(fft_filtered_map).real
 
     # Crop the map to remove zero padding
-    xcrop_start = (oversample-1) * xpix
+    xcrop_start = (oversample - 1) * xpix
     xcrop_end = xcrop_start + xpix
-    ycrop_start = (oversample-1) * ypix
+    ycrop_start = (oversample - 1) * ypix
     ycrop_end = ycrop_start + ypix
 
     # Crop matrices to get rid of zero padding
@@ -204,7 +211,7 @@ def pad_map(field_map: NDArray64, oversample: int = 2) -> NDArray64:
                    [0., 0., 0., 0., 0., 0.]])
     """
     new_shape = np.array(field_map.shape)
-    new_shape[-2:] *= 1+ 2*(oversample - 1)
+    new_shape[-2:] *= 1 + 2 * (oversample - 1)
     padded = np.zeros(new_shape, dtype=field_map.dtype)
     center_row = (new_shape[-2] - field_map.shape[-2]) // 2
     center_col = (new_shape[-1] - field_map.shape[-1]) // 2
