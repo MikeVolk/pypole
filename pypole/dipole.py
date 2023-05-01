@@ -27,127 +27,12 @@ dipole_field(x_grid, y_grid, x_source, y_source, z_observed, mx, my, mz):
     Note:
         The units of the magnetic field are Tesla (T).
 
-convert_vector(x, y, z, declination, inclination):
-    Convert from the (x, y, z) representation of a magnetic dipole moment vector to the
-    (mx, my, mz) representation.
-
-    Parameters:
-        x (float): The x-component of the magnetic dipole moment vector
-        y (float): The y-component of the magnetic dipole moment vector
-        z (float): The z-component of the magnetic dipole moment vector
-        declination (float): The declination of the dipole moment vector in degrees
-        inclination (float): The inclination of the dipole moment vector in degrees
-
-    Returns:
-        tuple: The (mx, my, mz) representation of the magnetic dipole moment vector in Am^2
-
-    Note:
-        The declination and inclination angles are in the range [-180, 180] degrees.
-
-dim2xyz(dim):
-    Convert from the (declination, inclination, moment) representation of a magnetic
-    dipole moment vector to the (x, y, z) representation.
-
-    Parameters:
-        dim (ndarray): The (declination, inclination, moment) representation of a
-        magnetic dipole moment vector
-
-    Returns:
-        ndarray: The (x, y, z) representation of the magnetic dipole moment vector
-
-    Note:
-        The declination and inclination angles are in the range [0, 360] and [-90,90] degrees.
-        The units of the magnetic moment are Am^2.
-
 """
-
-
-from typing import Any, Tuple
-
-import itertools
 
 import numba
 import numpy as np
-from numpy.typing import NDArray
 
 from pypole import NDArray64
-from pypole.maps import get_grid, get_random_sources
-
-
-def synthetic_map(
-    n_sources: int = 100,
-    pixels: tuple[int, int] = (100, 100),
-    sensor_distance: float = 5e-6,
-    pixel_size: float = 1e-6,
-) -> NDArray64:
-    """Calculate a single simple magnetic field map for a number of sources.
-
-    Parameters
-    ----------
-    n_sources : int
-        number of sources
-    pixels : int
-        number of pixels in the map
-    sensor_distance : float
-        distance from the sensor to the sample
-    pixel_size : float
-        size of each pixel in meters
-
-    Returns
-    -------
-    field_map : ndarray(pixels, pixels)
-        magnetic field map
-    """
-    # get the map grid in meters
-    x_grid, y_grid = get_grid(pixels, pixel_size)
-
-    # get the location for the sources
-    locations, source_vectors = get_random_sources(n_sources)
-    return calculate_map(x_grid, y_grid, locations, source_vectors, sensor_distance)
-
-
-from numba import prange
-
-@numba.jit(parallel=True, fastmath=True)
-def calculate_map(
-    x_grid: NDArray64,
-    y_grid: NDArray64,
-    locations: NDArray64,
-    source_vectors: NDArray64,
-    sensor_distance: float = 5e-6,
-) -> NDArray[np.float_]:
-    """Calculate the magnetic field map for a set of sources
-
-    Parameters
-    ----------
-    x_grid : ndarray(pixel, pixel)
-        x grid
-    y_grid : ndarray(pixel, pixel)
-        y grid
-    locations : ndarray(n_sources, 3)
-        x,y,z locations of sources
-    source_vectors : ndarray(n_sources, 3)
-        dipole moments in (x, y, z) format and Am2
-    sensor_distance : float, optional
-        sensor-sample distance by default 0.0
-    """
-
-    n_sources: int = locations.shape[0]
-    b: NDArray64 = np.zeros((n_sources, x_grid.shape[0], x_grid.shape[1]))
-
-    for i in range(n_sources):
-        b[i, :, :] = dipole_field(
-            x_grid,
-            y_grid,
-            locations[i, 0],
-            locations[i, 1],
-            locations[i, 2] + sensor_distance,
-            source_vectors[i, 0],
-            source_vectors[i, 1],
-            source_vectors[i, 1],
-        )
-    return np.sum(b, axis=0)
-
 
 
 @numba.njit(fastmath=True, parallel=True)
