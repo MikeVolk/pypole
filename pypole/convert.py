@@ -1,12 +1,14 @@
-import numba
-import numpy as np
-from numpy.typing import ArrayLike, NDArray
-
-from pypole import NDArray64
-from typing import Tuple
-
 """
-Converts between xyz and polar/azimuth coordinates with the convention of N along -Y-axis and +Z down.
+The convert.py module contains functions for converting between xyz and
+polar/azimuth coordinates. The convention used for the polar/azimuth coordinates
+is that N is along the -Y-axis and +Z is down. Each point is represented by a
+vector (x, y, z), where x, y, and z are the coordinates in a right-handed
+Cartesian coordinate system with N pointing in the -y direction, +Z pointing
+down, and +X pointing to the right. Polar/azimuth coordinates are represented as
+(declination, inclination, magnitude), where declination is the angle in degrees
+in the x-y plane measured from the x-axis to the projection of the vector on the
+x-y plane, inclination is the angle in degrees between the vector and the
+z-axis, and magnitude is the magnitude of the vector.
 
                   N, -Y
                *********
@@ -21,23 +23,26 @@ Converts between xyz and polar/azimuth coordinates with the convention of N alon
                S, +Y (declination = 180°)
 
 Each point is represented by a vector (x, y, z), where x, y, and z are the coordinates
-in a right-handed Cartesian coordinate system with N pointing in the -y direction,
-+Z pointing down, and +X pointing to the right. Polar/azimuth coordinates are represented
-as (declination, inclination, magnitude), where declination is the angle in degrees in
-the x-y plane measured from the x-axis to the projection of the vector on the x-y plane,
-inclination is the angle in degrees between the vector and the z-axis, and magnitude is
-the magnitude of the vector.
-
-Functions:
-----------
-xyz2dim(xyz: Union[np.ndarray, List[List[float]]]) -> np.ndarray:
-    Converts xyz coordinates to polar/azimuth coordinates.
-dim2xyz(dim: Union[np.ndarray, List[List[float]]]) -> np.ndarray:
-    Converts polar/azimuth coordinates to xyz coordinates.
 
 
-Examples:
-----------
+Functions
+---------
+    xyz2dim(xyz: ArrayLike) -> NDArray: Converts xyz coordinates to polar/azimuth coordinates.
+    dim2xyz(dim: ArrayLike) -> NDArray: Converts polar/azimuth coordinates to xyz coordinates.
+
+Notes
+-----
+    In the polar/azimuth convention used by this module, the declination is
+    measured counterclockwise from the x-axis, with 0 degrees pointing towards
+    the +y direction and 90 degrees pointing towards the +x direction. The
+    inclination is measured from the z-axis, with positive angles pointing
+    downwards. This convention is illustrated by the circle diagram in the
+    module docstring.
+
+
+Examples
+--------
+
 >>> import numpy as np
 >>> from pypole import convert
 >>> xyz = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
@@ -56,8 +61,14 @@ from the x-axis, with 0 degrees pointing towards the +y direction and 90 degrees
 +x direction. The inclination is measured from the z-axis, with positive angles pointing downwards.
 This convention is illustrated by the circle diagram above.
 """
+from typing import Tuple
 
+import numba
+import numpy as np
 from numba import guvectorize
+from numpy.typing import ArrayLike, NDArray
+
+from pypole import NDArray64
 
 
 @guvectorize(["void(float64[:], float64[:])"], "(n)->(n)")

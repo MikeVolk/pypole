@@ -27,13 +27,18 @@ classifiers = [  #! Update me
   "Programming Language :: Python :: 3.9",
 ]
 
+[tool.poetry.scripts]
+# Entry points for the package https://python-poetry.org/docs/pyproject/#scripts
+"pypole" = "pypole.__main__:app"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "~3.10"
 numpy = "^1.23.4"
 scipy = "^1.9.3"
 numba = "^0.56.4"
-matplotlib = "^3.6.2"
+mkdocs = "^1.4.2"
+mkdocstrings = "^0.20.0"
+tqdm = "^4.65.0"
 
 [tool.poetry.dev-dependencies]
 bandit = "*"
@@ -42,7 +47,6 @@ darglint = "*"
 isort = "*"
 mypy = "*"
 mypy-extensions = "*"
-pre-commit = "*"
 pydocstyle = "*"
 pylint = "*"
 pytest = "*"
@@ -52,6 +56,12 @@ coverage = "*"
 coverage-badge = "*"
 pytest-cov = "*"
 jupyterlab = "*"
+matplotlib = "*"
+pre-commit = "*"
+mkdocs = "*"
+mkdocstrings = "*"
+mkdocs-material = "*"
+mkdocstrings-python = "*"
 
 [tool.black]
 # https://github.com/psf/black
