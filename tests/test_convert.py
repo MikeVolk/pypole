@@ -41,3 +41,10 @@ xyz2dim_data = [
 @pytest.mark.parametrize("xyz, dim", xyz2dim_data)
 def test_xyz2dim(xyz, dim):
     assert np.allclose(convert.xyz2dim(xyz), dim)
+
+
+def test_main_runs(capsys):
+    """convert.main() should execute without error and print output."""
+    convert.main()
+    captured = capsys.readouterr()
+    assert len(captured.out) > 0
