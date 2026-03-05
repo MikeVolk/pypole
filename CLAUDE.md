@@ -51,7 +51,9 @@ ty does not understand numba internals — guvectorize output array assignments 
 
 ### Key conventions
 - **Dipole parameters** are always 6-tuples ordered `(x_source, y_source, z_source, mx, my, mz)` — positions in metres, moments in Am².
-- **Coordinate system** (`convert.py`): North = -Y axis, +Z points down. Declination measured CCW from North in X-Y plane; 0° = -Y, 90° = +X.
+- **Coordinate system** (`convert.py`): North = -Y axis, +Z points down (NED). Declination measured CCW from North in X-Y plane; 0° = -Y, 90° = +X. Inclination > 0 means pointing downward (+Z direction), matching pmagpy / standard NED convention. `inc = +90` → `z = +mz` (down); `inc = -90` → `z = -mz` (up).
+- **`get_grid`** (`maps.py`): spacing is exactly `pixel_size`; grid is centred at 0. Formula: `linspace(-(N-1)/2, (N-1)/2, N) * pixel_size`.
 - **`calculate_map`** lives in `dipole.py`, not `maps.py`. It sums contributions from all sources; `sensor_distance` is added to the source z-coordinate before field evaluation.
 - **`fit_dipole`** returns `scipy.optimize.OptimizeResult` — access optimised parameters via `.x`, not as a tuple.
 - **Git workflow**: gitflow — feature branches off `develop`, merge back to `develop`, release to `master`.
+- **Commit attribution**: never add `Co-Authored-By: Claude` or any AI attribution lines to commit messages.

@@ -2,13 +2,12 @@
 
 import numpy as np
 import pytest
-from hypothesis import assume, given, settings
+from hypothesis import assume, given
 from hypothesis import strategies as st
 from hypothesis.extra.numpy import arrays
 
 from pypole import compute, maps
 from pypole.convert import dim2xyz, xyz2dim
-
 
 # ---------------------------------------------------------------------------
 # Strategies

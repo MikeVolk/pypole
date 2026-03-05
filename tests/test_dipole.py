@@ -6,7 +6,6 @@ import pytest
 from pypole import maps
 from pypole.dipole import calculate_map, dipole_field, synthetic_map
 
-
 # ---------------------------------------------------------------------------
 # dipole_field
 # ---------------------------------------------------------------------------
@@ -162,3 +161,25 @@ def test_synthetic_map_nonzero():
     np.random.seed(0)
     result = synthetic_map(n_sources=1, pixels=(10, 10))
     assert np.any(result != 0.0)
+
+
+# ---------------------------------------------------------------------------
+# Physics regression: on-axis analytical solution
+# ---------------------------------------------------------------------------
+
+
+def test_dipole_field_on_axis_analytical():
+    """On-axis Bz for a vertical dipole matches the analytical formula.
+
+    For a dipole with moment mz at height h directly above the sensor:
+        Bz = (mu_0 / 4*pi) * 2*mz / h^3
+
+    This is a direct check of the mu_0/4*pi prefactor and the r^-3 decay.
+    """
+    mz = 1e-14
+    h = 5e-6
+    x = np.array([[0.0]])
+    y = np.array([[0.0]])
+    bz = dipole_field(x, y, 0.0, 0.0, h, 0.0, 0.0, mz)
+    expected = 1e-7 * 2 * mz / h**3
+    np.testing.assert_allclose(bz[0, 0], expected, rtol=1e-10)

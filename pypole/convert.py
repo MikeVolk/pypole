@@ -38,12 +38,12 @@ Examples:
 >>> convert.xyz2dim(xyz)
 array([[ 90.,  -0.,   1.],
        [180.,  -0.,   1.],
-       [ 90., -90.,   1.]])
+       [ 90.,  90.,   1.]])
 
 >>> dim = np.array([[0, 0, 1], [0, 90, 1]], dtype=np.float64)
 >>> convert.dim2xyz(dim)  # doctest: +NORMALIZE_WHITESPACE
 array([[ 0.000000e+00, -1.000000e+00, -0.000000e+00],
-       [ 0.000000e+00, -6.123234e-17, -1.000000e+00]])
+       [ 0.000000e+00, -6.123234e-17,  1.000000e+00]])
 
 Note: In the polar/azimuth convention used by this module, the declination is measured counterclockwise
 from the x-axis, with 0 degrees pointing towards the +y direction and 90 degrees pointing towards the
@@ -75,7 +75,7 @@ def dim2xyz(dim: tuple[float, float, float], xyz: tuple[float, float, float]):
 
     xyz[0] = mag * np.sin(dec) * np.cos(inc)  # ty: ignore[invalid-assignment]
     xyz[1] = -mag * np.cos(dec) * np.cos(inc)  # ty: ignore[invalid-assignment]
-    xyz[2] = mag * np.sin(-inc)  # ty: ignore[invalid-assignment]
+    xyz[2] = mag * np.sin(inc)  # ty: ignore[invalid-assignment]
 
 
 @guvectorize(["void(float64[:], float64[:])"], "(n)->(n)")
@@ -107,14 +107,14 @@ def xyz2dim(xyz: tuple[float, float, float], dim: tuple[float, float, float]):
     >>> xyz2dim(xyz)
     array([[ 90.,  -0.,   1.],
            [180.,  -0.,   1.],
-           [ 90., -90.,   1.]])
+           [ 90.,  90.,   1.]])
     """
     x, y, z = xyz
 
     # calculate dec and map to 0-360 degree range
     dim[0] = (90 + np.degrees(np.arctan2(y, x))) % 360  # ty: ignore[invalid-assignment]
     dim[2] = np.linalg.norm(xyz)  # ty: ignore[invalid-assignment]
-    dim[1] = -np.degrees(np.arcsin(z / dim[2]))  # ty: ignore[invalid-assignment]
+    dim[1] = np.degrees(np.arcsin(z / dim[2]))  # ty: ignore[invalid-assignment]
 
 
 def main():

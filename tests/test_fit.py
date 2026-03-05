@@ -6,8 +6,7 @@ from scipy.optimize import OptimizeResult
 
 from pypole import maps
 from pypole.dipole import calculate_map
-from pypole.fit import _fit_dipole, dipole_residual, fit_dipole, fit_dipole_n_maps
-
+from pypole.fit import dipole_residual, fit_dipole, fit_dipole_n_maps
 
 # ---------------------------------------------------------------------------
 # Fixtures
