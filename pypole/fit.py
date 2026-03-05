@@ -24,6 +24,7 @@ from pypole import NDArray64, maps
 from pypole.dipole import dipole_field
 
 
+@numba.jit(nopython=True, parallel=True)
 def fit_dipole_n_maps(
     x_grid: NDArray[np.float64],
     y_grid: NDArray[np.float64],
@@ -40,8 +41,8 @@ def fit_dipole_n_maps(
         y grid
     field_maps : ndarray(n_maps, pixel, pixel)
         magnetic field map for all frames
-    initial_guess : ndarray(n_maps, 3)
-        initial guess for dipole parameters
+    initial_guess : ndarray(n_maps, 6)
+        initial guess for dipole parameters per map
 
     Returns
     -------
@@ -50,21 +51,24 @@ def fit_dipole_n_maps(
 
     Notes
     -----
-    This function uses Numba's JIT compiler to optimize performance by parallelizing the for loop.
-
+    Uses numba.objmode() to call scipy.optimize.least_squares from within
+    a nopython JIT context. The outer prange loop is compiled and parallel,
+    but each scipy call re-acquires the GIL, so wall-time speedup depends
+    on GIL contention.
     """
 
     n_maps = field_maps.shape[0]
     best_fit_dipoles = np.empty((n_maps, 6))
 
-    for map_index in range(n_maps):
-        # fit dipole for each map
-        best_fit_dipoles[map_index, :] = _fit_dipole(
-            field_map=field_maps[map_index],
-            p0=initial_guess[map_index],
-            x_grid=x_grid,
-            y_grid=y_grid,
-        )
+    for map_index in numba.prange(n_maps):  # ty: ignore[not-iterable]
+        with numba.objmode(params="float64[:]"):
+            params = _fit_dipole(
+                field_map=field_maps[map_index],
+                p0=initial_guess[map_index],
+                x_grid=x_grid,
+                y_grid=y_grid,
+            ).x
+        best_fit_dipoles[map_index, :] = params
 
     return best_fit_dipoles
 
