@@ -18,11 +18,13 @@ Functions:
 """
 
 import matplotlib as mpl
+import matplotlib.axes
 import matplotlib.pyplot as plt
+import matplotlib.ticker
 import numpy as np
 from mpl_toolkits.axes_grid1 import ImageGrid
 
-from pypole import NDArray64, compute, fit, maps
+from pypole import NDArray64, compute
 
 
 def plot_map(
@@ -31,7 +33,7 @@ def plot_map(
     cbar_label: str = "B [T]",
     vminmax=None,
     ax=None,
-) -> None:
+) -> matplotlib.axes.Axes:
     """Plot a single map
 
     Args:
@@ -40,7 +42,7 @@ def plot_map(
         cbar_label (str, optional): Label of the colorbar. Defaults to 'B [T]'.
 
     Returns:
-        None
+        Axes
     """
     if ax is None:
         fig, ax = plt.subplots()

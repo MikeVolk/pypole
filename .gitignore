@@ -623,3 +623,6 @@ notebooks/.ipynb_checkpoints/
 .ipynb_checkpoints/
 
 Untitled.ipynb
+
+# uv lock file (library, not application)
+uv.lock

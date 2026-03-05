@@ -1,10 +1,3 @@
-import numba
-import numpy as np
-from numpy.typing import ArrayLike, NDArray
-
-from pypole import NDArray64
-from typing import Tuple
-
 """
 Converts between xyz and polar/azimuth coordinates with the convention of N along -Y-axis and +Z down.
 
@@ -41,15 +34,16 @@ Examples:
 >>> import numpy as np
 >>> from pypole import convert
 >>> xyz = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+>>> xyz = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=np.float64)
 >>> convert.xyz2dim(xyz)
-array([[  0., -90.,   1.],
-       [ 90., -90.,   1.],
-       [  0.,   0.,   1.]])
+array([[ 90.,  -0.,   1.],
+       [180.,  -0.,   1.],
+       [ 90.,  90.,   1.]])
 
->>> dim = np.array([[0, 0, 1], [0, 90, 1]])
->>> convert.dim2xyz(dim)
-array([[ 0., -1.,  0.],
-       [ 0.,  0., -1.]])
+>>> dim = np.array([[0, 0, 1], [0, 90, 1]], dtype=np.float64)
+>>> convert.dim2xyz(dim)  # doctest: +NORMALIZE_WHITESPACE
+array([[ 0.000000e+00, -1.000000e+00, -0.000000e+00],
+       [ 0.000000e+00, -6.123234e-17,  1.000000e+00]])
 
 Note: In the polar/azimuth convention used by this module, the declination is measured counterclockwise
 from the x-axis, with 0 degrees pointing towards the +y direction and 90 degrees pointing towards the
@@ -57,11 +51,12 @@ from the x-axis, with 0 degrees pointing towards the +y direction and 90 degrees
 This convention is illustrated by the circle diagram above.
 """
 
+import numpy as np
 from numba import guvectorize
 
 
 @guvectorize(["void(float64[:], float64[:])"], "(n)->(n)")
-def dim2xyz(dim: Tuple[float, float, float], xyz: Tuple[float, float, float]):
+def dim2xyz(dim: tuple[float, float, float], xyz: tuple[float, float, float]):
     """
     A guvectorize function that calculates x,y,z from polar/azimuth data.
 
@@ -78,13 +73,13 @@ def dim2xyz(dim: Tuple[float, float, float], xyz: Tuple[float, float, float]):
     inc = np.deg2rad(dim[1])
     mag = dim[2]
 
-    xyz[0] = mag * np.sin(dec) * np.cos(inc)
-    xyz[1] = -mag * np.cos(dec) * np.cos(inc)
-    xyz[2] = mag * np.sin(-inc)
+    xyz[0] = mag * np.sin(dec) * np.cos(inc)  # ty: ignore[invalid-assignment]
+    xyz[1] = -mag * np.cos(dec) * np.cos(inc)  # ty: ignore[invalid-assignment]
+    xyz[2] = mag * np.sin(inc)  # ty: ignore[invalid-assignment]
 
 
 @guvectorize(["void(float64[:], float64[:])"], "(n)->(n)")
-def xyz2dim(xyz: Tuple[float, float, float], dim: Tuple[float, float, float]):
+def xyz2dim(xyz: tuple[float, float, float], dim: tuple[float, float, float]):
     """
     Calculates polar/azimuth from x,y,z data.
 
@@ -108,18 +103,18 @@ def xyz2dim(xyz: Tuple[float, float, float], dim: Tuple[float, float, float]):
 
     Examples
     --------
-    >>> xyz = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    >>> xyz = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=np.float64)
     >>> xyz2dim(xyz)
-    array([[  0.,  90.,   1.],
-           [ 90.,   0.,   1.],
-           [  0.,  -90.,   1.]])
+    array([[ 90.,  -0.,   1.],
+           [180.,  -0.,   1.],
+           [ 90.,  90.,   1.]])
     """
     x, y, z = xyz
 
     # calculate dec and map to 0-360 degree range
-    dim[0] = (90 + np.degrees(np.arctan2(y, x))) % 360
-    dim[2] = np.linalg.norm(xyz)
-    dim[1] = -np.degrees(np.arcsin(z / dim[2]))
+    dim[0] = (90 + np.degrees(np.arctan2(y, x))) % 360  # ty: ignore[invalid-assignment]
+    dim[2] = np.linalg.norm(xyz)  # ty: ignore[invalid-assignment]
+    dim[1] = np.degrees(np.arcsin(z / dim[2]))  # ty: ignore[invalid-assignment]
 
 
 def main():

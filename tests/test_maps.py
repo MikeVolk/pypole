@@ -1,4 +1,3 @@
-# type: ignore
 import numpy as np
 
 from pypole import maps
@@ -10,13 +9,13 @@ def test_grid2x2():
     # equality between one pixel and two pixel values
     assert np.allclose(maps.get_grid(2, 1), maps.get_grid((2, 2), 1))
 
-    # explicit values
-    assert np.all(maps.get_grid((2, 2), 1)[0] == np.array([[-1, 1], [-1, 1]]))
-    assert np.all(maps.get_grid((2, 2), 1)[1] == np.array([[-1, -1], [1, 1]]))
+    # explicit values: spacing == pixel_size, centred at 0
+    assert np.all(maps.get_grid((2, 2), 1)[0] == np.array([[-0.5, 0.5], [-0.5, 0.5]]))
+    assert np.all(maps.get_grid((2, 2), 1)[1] == np.array([[-0.5, -0.5], [0.5, 0.5]]))
 
     # including pixelsize
     assert np.all(
-        maps.get_grid((2, 2), PIXELSIZE)[1] == PIXELSIZE * np.array([[-1, -1], [1, 1]])
+        maps.get_grid((2, 2), PIXELSIZE)[1] == PIXELSIZE * np.array([[-0.5, -0.5], [0.5, 0.5]])
     )
 
 
@@ -24,25 +23,25 @@ def test_grid6x6():
     # equality between one pixel and two pixel values
     assert np.allclose(maps.get_grid(6, 1), maps.get_grid((6, 6), 1))
 
-    # explicit values
-    assert np.all(maps.get_grid((6, 6), 1)[0][0, :] == np.linspace(-3, 3, 6))
-    assert np.all(maps.get_grid((6, 6), 1)[1][:, 1] == np.linspace(-3, 3, 6))
+    # explicit values: exact pixel_size spacing, centred at 0
+    assert np.all(maps.get_grid((6, 6), 1)[0][0, :] == np.linspace(-2.5, 2.5, 6))
+    assert np.all(maps.get_grid((6, 6), 1)[1][:, 1] == np.linspace(-2.5, 2.5, 6))
 
     assert np.all(
-        maps.get_grid((6, 6), PIXELSIZE)[1][:, 1] == PIXELSIZE * np.linspace(-3, 3, 6)
+        maps.get_grid((6, 6), PIXELSIZE)[1][:, 1] == PIXELSIZE * np.linspace(-2.5, 2.5, 6)
     )
 
 
 def test_grid_rectangular():
-    # explicit values
-    assert np.all(maps.get_grid((2, 6), 1)[0][:, 0] == np.ones(6) * -1)
-    assert np.all(maps.get_grid((2, 6), 1)[0][:, 1] == np.ones(6))
+    # explicit values: exact pixel_size spacing, centred at 0
+    assert np.all(maps.get_grid((2, 6), 1)[0][:, 0] == np.ones(6) * -0.5)
+    assert np.all(maps.get_grid((2, 6), 1)[0][:, 1] == np.ones(6) * 0.5)
 
-    assert np.all(maps.get_grid((2, 6), 1)[1][:, 0] == np.linspace(-3, 3, 6))
-    assert np.all(maps.get_grid((2, 6), 1)[1][:, 1] == np.linspace(-3, 3, 6))
+    assert np.all(maps.get_grid((2, 6), 1)[1][:, 0] == np.linspace(-2.5, 2.5, 6))
+    assert np.all(maps.get_grid((2, 6), 1)[1][:, 1] == np.linspace(-2.5, 2.5, 6))
 
     assert np.all(
-        maps.get_grid((2, 6), PIXELSIZE)[1][:, 1] == PIXELSIZE * np.linspace(-3, 3, 6)
+        maps.get_grid((2, 6), PIXELSIZE)[1][:, 1] == PIXELSIZE * np.linspace(-2.5, 2.5, 6)
     )
 
 
