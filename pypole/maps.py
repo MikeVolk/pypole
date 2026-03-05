@@ -211,8 +211,8 @@ def get_grid(
         )
         pixels = (pixels, pixels)
 
-    x_points = np.linspace(-pixels[0], pixels[0], pixels[0]) * pixel_size / 2
-    y_points = np.linspace(-pixels[1], pixels[1], pixels[1]) * pixel_size / 2
+    x_points = np.linspace(-(pixels[0] - 1) / 2, (pixels[0] - 1) / 2, pixels[0]) * pixel_size
+    y_points = np.linspace(-(pixels[1] - 1) / 2, (pixels[1] - 1) / 2, pixels[1]) * pixel_size
 
     x_grid, y_grid = np.meshgrid(x_points, y_points)
     return x_grid.astype(np.float64), y_grid.astype(np.float64)

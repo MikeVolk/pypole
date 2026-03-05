@@ -9,11 +9,11 @@ dim2xyz_data = [
     [[(0, 1, 0), (0, 1, 0)], [(180, 0, 1), (180, 0, 1)]],
     [
         (0, 0, 1),
-        (90, -90, 1),
-    ],  # for x=0 and y=0, declination is not defined, here. Returns 90
-    [(0, 0, -1), (90, 90, 1)],  # declination is not defined, here. Returns 90
+        (90, 90, 1),
+    ],  # inc=+90 -> pointing down (+Z) in NED convention
+    [(0, 0, -1), (90, -90, 1)],  # inc=-90 -> pointing up (-Z) in NED convention
     [(1, 1, 0), (135, 0, np.sqrt(2))],
-    [(1, 1, 1), (135, -35.26438968, np.sqrt(3))],
+    [(1, 1, 1), (135, 35.26438968, np.sqrt(3))],
     [[1.2, 3.4, 5.6], convert.xyz2dim([1.2, 3.4, 5.6])],
 ]
 
@@ -26,13 +26,13 @@ def test_dim2xyz(xyz, dim):
 xyz2dim_data = [
     [(1, 0, 0), (90, 0, 1)],
     [(0, 1, 0), (180, 0, 1)],
-    [(0, 0, 1), (90, -90, 1)],  # declination is not defined, here. Returns 90 anyways
-    [(0, 0, -1), (90, 90, 1)],
+    [(0, 0, 1), (90, 90, 1)],  # +Z down in NED -> inc=+90
+    [(0, 0, -1), (90, -90, 1)],  # -Z up -> inc=-90
     [(1, 1, 0), (135, 0, np.sqrt(2))],
-    [(1, 1, 1), (135, -35.26438968, np.sqrt(3))],
+    [(1, 1, 1), (135, 35.26438968, np.sqrt(3))],
     [
         [(1, 1, 1), (1, 1, 1)],
-        [(135, -35.26438968, np.sqrt(3)), (135, -35.26438968, np.sqrt(3))],
+        [(135, 35.26438968, np.sqrt(3)), (135, 35.26438968, np.sqrt(3))],
     ],
     [convert.dim2xyz([11.2, 33.21, 1.828e-6]), (11.2, 33.21, 1.828e-6)],
 ]  # xyz, dim
@@ -41,3 +41,10 @@ xyz2dim_data = [
 @pytest.mark.parametrize("xyz, dim", xyz2dim_data)
 def test_xyz2dim(xyz, dim):
     assert np.allclose(convert.xyz2dim(xyz), dim)
+
+
+def test_main_runs(capsys):
+    """convert.main() should execute without error and print output."""
+    convert.main()
+    captured = capsys.readouterr()
+    assert len(captured.out) > 0
