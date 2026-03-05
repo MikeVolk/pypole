@@ -1,8 +1,5 @@
 __version__ = "0.1.0a"
 
-import logging
-import os
-import shutil
 import sys
 from pathlib import Path
 

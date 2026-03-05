@@ -22,6 +22,7 @@ Examples
 --------
 >>> x_grid, y_grid = get_grid(pixels=(50, 50), pixel_size=1e-6)
 >>> locations, source_vectors = get_random_sources(n_sources=10)
+>>> from pypole.dipole import calculate_map
 >>> map_data = calculate_map(x_grid, y_grid, locations, source_vectors)
 
 
@@ -36,17 +37,12 @@ All functions return ndarrays of appropriate dimensions and data types.
 Examples are included in the docstring to demonstrate the usage of each function.
 """
 
-import typing
-from typing import Any, Tuple, Union
-from numba import njit
-import logging
+from typing import Union
 
 import numpy as np
-from numpy.typing import ArrayLike, NDArray
+from loguru import logger
 
 from pypole import NDArray64, convert
-
-LOG = logging.getLogger(__name__)
 
 
 def get_random_sources(
@@ -99,8 +95,7 @@ def get_random_sources(
     return locations, source_vector
 
 
-
-def get_random_dim(n_sources: int, moment_range: Tuple[float, float]) -> NDArray64:
+def get_random_dim(n_sources: int, moment_range: tuple[float, float]) -> NDArray64:
     """
     Generate randomly distributed dipole moments on the unit sphere.
 
@@ -146,7 +141,6 @@ def get_random_dim(n_sources: int, moment_range: Tuple[float, float]) -> NDArray
     return np.stack([declination, inclination, moment_scalar]).T
 
 
-
 def get_random_locations(n_sources, x_range, y_range, z_range):
     """Generate random locations for sources within the source region of the map (x_range, y_range, z_range)
 
@@ -170,7 +164,8 @@ def get_random_locations(n_sources, x_range, y_range, z_range):
     --------
     >>> np.random.seed(0)
     >>> get_random_locations(2, (-3e-6, 3e-6), (-3e-6, 3e-6), (1e-6, 4e-6))
-    >>> array([[2.92881024e-07, 6.16580256e-07, 2.27096440e-06],[1.29113620e-06, 2.69299098e-07, 2.93768234e-06]])
+    array([[2.92881024e-07, 6.16580256e-07, 2.27096440e-06],
+           [1.29113620e-06, 2.69299098e-07, 2.93768234e-06]])
 
     """
 
@@ -182,8 +177,8 @@ def get_random_locations(n_sources, x_range, y_range, z_range):
 
 
 def get_grid(
-    pixels: Union[Tuple[int, int], int] = (100, 100), pixel_size: float = 5e-6
-) -> Tuple[NDArray64, NDArray64]:
+    pixels: Union[tuple[int, int], int] = (100, 100), pixel_size: float = 5e-6
+) -> tuple[NDArray64, NDArray64]:
     """Generate observation coordinates of the map
 
     Parameters
@@ -209,8 +204,10 @@ def get_grid(
     (100, 50)
     """
     if isinstance(pixels, int):
-        LOG.warning(
-            f"pixels should be a tuple of (x,y) pixel size. Setting to ({pixels},{pixels})"
+        logger.warning(
+            "pixels should be a tuple of (x,y) pixel size. Setting to ({},{})",
+            pixels,
+            pixels,
         )
         pixels = (pixels, pixels)
 
@@ -219,4 +216,3 @@ def get_grid(
 
     x_grid, y_grid = np.meshgrid(x_points, y_points)
     return x_grid.astype(np.float64), y_grid.astype(np.float64)
-
