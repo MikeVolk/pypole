@@ -39,6 +39,7 @@ dev = [
   "pytest-cov>=3.0.0",
   "coverage>=6.1.2",
   "coverage-badge>=1.1.0",
+  "hypothesis>=6.0.0",
   "ruff>=0.6.0",
   "ty>=0.0.1a1",
   "jupyterlab>=3.5.0",
@@ -76,7 +77,7 @@ indent-style = "space"
 [tool.ty]
 
 [tool.pytest.ini_options]
-norecursedirs = ["hooks", "*.egg", ".eggs", "dist", "build", "docs", ".tox", ".git", "__pycache__"]
+norecursedirs = ["hooks", "*.egg", ".eggs", "dist", "build", "docs", ".tox", ".git", "__pycache__", ".hypothesis"]
 doctest_optionflags = ["NUMBER", "NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
 addopts = [
   "--strict-markers",
