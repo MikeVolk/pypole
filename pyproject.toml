@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pypole"
-version = "0.1.1"
+version = "0.2.0"
 description = "Tools for simulating and fitting magnetic field maps from magnetic dipoles"
 readme = "README.md"
 authors = [{name = "Michael Volk", email = "michaelvolk1979@gmail.com"}]
