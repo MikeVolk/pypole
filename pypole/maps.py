@@ -1,40 +1,24 @@
 """
 maps.py
 =======
-This module contains functions for generating magnetic field maps from magnetic dipole sources.
+Grid and random source generation for magnetic dipole field maps.
 
 Functions
 ---------
-get_grid(pixels: Tuple[int, int] or int = (100, 100), pixel_size: float = 5e-6) -> Tuple[np.ndarray, np.ndarray]:
-    Generate a grid of observation coordinates for the map.
+get_grid(pixels, pixel_size) -> Tuple[NDArray64, NDArray64]:
+    Generate observation coordinates for the map. Grid is centred at 0
+    with spacing exactly equal to pixel_size.
 
-get_random_sources(n_sources: int, x_range: Tuple[float, float] = (-3e-6, 3e-6),
-                    y_range: Tuple[float, float] = (-3e-6, 3e-6),
-                    z_range: Tuple[float, float] = (1e-6, 4e-6),
-                    moment_range: Tuple[float, float] = (1e-14, 1e-14)) -> Tuple[np.ndarray, np.ndarray]:
-    Generate a dictionary of random point source parameters including location and dipole moment.
+get_random_sources(n_sources, ...) -> Tuple[NDArray64, NDArray64]:
+    Generate random source locations and dipole moment vectors.
 
-calculate_map(x_grid: np.ndarray, y_grid: np.ndarray, locations: np.ndarray,
-              source_vectors: np.ndarray, sensor_distance: float = 5e-6) -> np.ndarray:
-    Calculate the magnetic field map for a set of sources.
+get_random_dim(n_sources, moment_range) -> NDArray64:
+    Generate randomly distributed dipole moments on the unit sphere.
 
-Examples
---------
->>> x_grid, y_grid = get_grid(pixels=(50, 50), pixel_size=1e-6)
->>> locations, source_vectors = get_random_sources(n_sources=10)
->>> from pypole.dipole import calculate_map
->>> map_data = calculate_map(x_grid, y_grid, locations, source_vectors)
+get_random_locations(n_sources, x_range, y_range, z_range) -> NDArray64:
+    Generate random source locations within a given spatial range.
 
-
-The maps.py file contains three functions for generating magnetic field maps from magnetic dipole sources.
-
-- `get_grid()` generates a grid of observation coordinates for the map, given the number of pixels and pixel size.
-- `get_random_sources()` generates a dictionary of random point source parameters including location and dipole moment, given the number of sources and range of parameters.
-- `calculate_map()` calculates the magnetic field map for a set of sources, given the observation coordinates, source locations and dipole moments.
-
-All functions return ndarrays of appropriate dimensions and data types.
-
-Examples are included in the docstring to demonstrate the usage of each function.
+Note: calculate_map() and synthetic_map() live in pypole.dipole, not here.
 """
 
 from typing import Union
