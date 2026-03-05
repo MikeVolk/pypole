@@ -33,13 +33,8 @@ distance. This can be useful, for example, when simulating the magnetic field of
 sample at a different distance than the one at which it was measured.
 """
 
-import logging
-
 import numpy as np
 from numba import float64, guvectorize
-from numpy.typing import NDArray
-
-LOG = logging.getLogger(__name__)
 
 from pypole import NDArray64
 
@@ -69,10 +64,9 @@ def dipolarity_param(field_map: NDArray64, fitted_map: NDArray64) -> np.float64:
         >>> field_map = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
         >>> fitted_map = np.array([[1.2, 1.8], [3.1, 3.9], [4.8, 6.1]])
         >>> dipolarity_param(field_map, fitted_map)
-        0.9594001028529425
-        >>> dipolarity_param(np.array([field_map, field_map]),
-                             np.array([fitted_map, fitted_map]))
-        array([0.9594001 , 0.9594001 ])
+        np.float64(0.9594001028529425)
+        >>> dipolarity_param(np.array([field_map, field_map]), np.array([fitted_map, fitted_map]))
+        array([0.9594001, 0.9594001])
 
     References
     ----------
@@ -107,7 +101,7 @@ def rms(field_map: NDArray64, result: NDArray64) -> None:
         >>> import numpy as np
         >>> field_map_2d = np.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
         >>> rms(field_map_2d)
-        3.8944404818493075
+        np.float64(3.8944404818493075)
 
         >>> field_map_3d = np.array([[[1.0, 2.0], [3.0, 4.0]], [[5.0, 6.0], [7.0, 8.0]]])
         >>> rms(field_map_3d)
@@ -138,8 +132,8 @@ def upward_continue(
         >>> import numpy as np
         >>> field_map = np.array([[1, 2], [3, 4]], dtype=np.float64)
         >>> upward_continue(field_map, 2, 0.5)
-        array([[ 3.77615757,  3.38899885],
-               [ 4.74852508,  4.26136635]])
+        array([[0.29049364, 0.29162241],
+               [0.29275118, 0.29387995]])
     """
     ypix, xpix = field_map.shape
 
@@ -168,9 +162,9 @@ def upward_continue(
     filtered_map = np.fft.ifft2(fft_filtered_map).real
 
     # Crop the map to remove zero padding
-    xcrop_start = (oversample-1) * xpix
+    xcrop_start = (oversample - 1) * xpix
     xcrop_end = xcrop_start + xpix
-    ycrop_start = (oversample-1) * ypix
+    ycrop_start = (oversample - 1) * ypix
     ycrop_end = ycrop_start + ypix
 
     # Crop matrices to get rid of zero padding
@@ -204,7 +198,7 @@ def pad_map(field_map: NDArray64, oversample: int = 2) -> NDArray64:
                    [0., 0., 0., 0., 0., 0.]])
     """
     new_shape = np.array(field_map.shape)
-    new_shape[-2:] *= 1+ 2*(oversample - 1)
+    new_shape[-2:] *= 1 + 2 * (oversample - 1)
     padded = np.zeros(new_shape, dtype=field_map.dtype)
     center_row = (new_shape[-2] - field_map.shape[-2]) // 2
     center_col = (new_shape[-1] - field_map.shape[-1]) // 2

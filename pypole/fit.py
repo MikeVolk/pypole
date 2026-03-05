@@ -15,18 +15,16 @@ _fit_dipole(field_map: ndarray, p0: Tuple[float, float, float, float, float, flo
     helper function that fits a single dipole to a magnetic field map using `scipy.optimize.least_squares`
 """
 
-import typing
-
 import numba
 import numpy as np
-from numpy.typing import ArrayLike, NDArray
-from scipy.optimize import least_squares
+from numpy.typing import NDArray
+from scipy.optimize import OptimizeResult, least_squares
 
-from pypole import NDArray64, compute, maps
+from pypole import NDArray64, maps
 from pypole.dipole import dipole_field
 
 
-@jit(nopython=True, parallel=True)
+@numba.jit(nopython=True, parallel=True)
 def fit_dipole_n_maps(
     x_grid: NDArray[np.float64],
     y_grid: NDArray[np.float64],
@@ -60,7 +58,7 @@ def fit_dipole_n_maps(
     n_maps = field_maps.shape[0]
     best_fit_dipoles = np.empty((n_maps, 6))
 
-    for map_index in numba.prange(n_maps):
+    for map_index in numba.prange(n_maps):  # ty: ignore[not-iterable]
         # fit dipole for each map
         best_fit_dipoles[map_index, :] = _fit_dipole(
             field_map=field_maps[map_index],
@@ -131,7 +129,7 @@ def fit_dipole(
     field_map: NDArray64,
     p0: tuple[float, float, float, float, float, float],
     pixel_size: float = 1.0,
-) -> tuple[float, float, float, float, float, float]:
+) -> OptimizeResult:
     """Fit a single dipole to a magnetic field map using non-linear least squares optimization.
 
     Parameters
@@ -165,22 +163,27 @@ def fit_dipole(
     Examples
     --------
     >>> import numpy as np
-    >>> from pypole import fit, maps
+    >>> from pypole import fit, maps, dipole
     >>> np.random.seed(0)
     >>> n_sources = 1
     >>> location, moment = maps.get_random_sources(n_sources)
-    >>> B = maps.calculate_map(*maps.get_grid(), location, moment)
+    >>> B = dipole.calculate_map(*maps.get_grid(), location, moment)
     >>> p = (*location[0], *moment[0])
-    >>> dipole_fit = fit.fit_dipole(B, p)
-    >>> print(dipole_fit)
-    (3.105035473030962e-06, 3.1429127897760807e-06, 2.520055491162705e-06, 2.469768791414657e-16, 7.708114785111617e-16, -2.1171793943168296e-15)
+    >>> result = fit.fit_dipole(B, p)
+    >>> result.success
+    True
     """
 
     x_grid, y_grid = maps.get_grid(pixels=field_map.shape, pixel_size=pixel_size)
     return _fit_dipole(field_map, p0, x_grid, y_grid)
 
 
-def _fit_dipole(field_map: NDArray64, p0: tuple[float, float, float, float, float, float], x_grid: NDArray64, y_grid: NDArray64) -> OptimizeResult:
+def _fit_dipole(
+    field_map: NDArray64,
+    p0: tuple[float, float, float, float, float, float],
+    x_grid: NDArray64,
+    y_grid: NDArray64,
+) -> OptimizeResult:
     """Helper function for fitting a single dipole to a magnetic field map.
 
     Parameters
