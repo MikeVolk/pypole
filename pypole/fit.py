@@ -8,10 +8,10 @@ function.
 
 Functions
 ---------
-fit_dipole(field_map: ndarray, p0: Tuple[float, float, float, float, float, float], pixel_size: float = 1) -> Tuple[float, float, float, float, float, float]:
+fit_dipole(field_map: ndarray, p0: tuple[float, ...], pixel_size: float = 1) -> OptimizeResult:
     fits a single dipole to a magnetic field map
 
-_fit_dipole(field_map: ndarray, p0: Tuple[float, float, float, float, float, float], x_grid: ndarray, y_grid: ndarray) -> OptimizeResult:
+_fit_dipole(field_map: ndarray, p0: tuple[float, ...], x_grid: ndarray, y_grid: ndarray) -> OptimizeResult:
     helper function that fits a single dipole to a magnetic field map using `scipy.optimize.least_squares`
 """
 
@@ -24,7 +24,6 @@ from pypole import NDArray64, maps
 from pypole.dipole import dipole_field
 
 
-@numba.jit(nopython=True, parallel=True)
 def fit_dipole_n_maps(
     x_grid: NDArray[np.float64],
     y_grid: NDArray[np.float64],
@@ -58,7 +57,7 @@ def fit_dipole_n_maps(
     n_maps = field_maps.shape[0]
     best_fit_dipoles = np.empty((n_maps, 6))
 
-    for map_index in numba.prange(n_maps):  # ty: ignore[not-iterable]
+    for map_index in range(n_maps):
         # fit dipole for each map
         best_fit_dipoles[map_index, :] = _fit_dipole(
             field_map=field_maps[map_index],

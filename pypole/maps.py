@@ -52,7 +52,7 @@ def get_random_sources(
     z_range: tuple[float, float] = (1e-6, 4e-6),
     moment_range: tuple[float, float] = (1e-14, 1e-14),
 ) -> tuple[NDArray64, NDArray64]:
-    """Generate diction of point source parameters
+    """Generate dictionary of point source parameters
 
     Parameters
     ----------

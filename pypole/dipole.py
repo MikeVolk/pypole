@@ -27,23 +27,6 @@ dipole_field(x_grid, y_grid, x_source, y_source, z_observed, mx, my, mz):
     Note:
         The units of the magnetic field are Tesla (T).
 
-convert_vector(x, y, z, declination, inclination):
-    Convert from the (x, y, z) representation of a magnetic dipole moment vector to the
-    (mx, my, mz) representation.
-
-    Parameters:
-        x (float): The x-component of the magnetic dipole moment vector
-        y (float): The y-component of the magnetic dipole moment vector
-        z (float): The z-component of the magnetic dipole moment vector
-        declination (float): The declination of the dipole moment vector in degrees
-        inclination (float): The inclination of the dipole moment vector in degrees
-
-    Returns:
-        tuple: The (mx, my, mz) representation of the magnetic dipole moment vector in Am^2
-
-    Note:
-        The declination and inclination angles are in the range [-180, 180] degrees.
-
 dim2xyz(dim):
     Convert from the (declination, inclination, moment) representation of a magnetic
     dipole moment vector to the (x, y, z) representation.
@@ -63,6 +46,7 @@ dim2xyz(dim):
 
 import numba
 import numpy as np
+from numba import prange
 from numpy.typing import NDArray
 
 from pypole import NDArray64
@@ -128,7 +112,7 @@ def calculate_map(
     n_sources: int = locations.shape[0]
     b: NDArray64 = np.zeros((n_sources, x_grid.shape[0], x_grid.shape[1]))
 
-    for i in range(n_sources):
+    for i in prange(n_sources):  # ty: ignore[not-iterable]
         b[i, :, :] = dipole_field(
             x_grid,
             y_grid,
@@ -137,7 +121,7 @@ def calculate_map(
             locations[i, 2] + sensor_distance,
             source_vectors[i, 0],
             source_vectors[i, 1],
-            source_vectors[i, 1],
+            source_vectors[i, 2],
         )
     return np.sum(b, axis=0)
 
@@ -228,8 +212,7 @@ def dipole_field(
     # bx = 3.0 * aux * dgridx
     # by = 3.0 * aux * dgridy
 
-    # Calculate the field due to the z component of the magnetic dipole moment vector
-    bz = (3.0 * aux) * z_observed
+    # Calculate Bz: 3*(r.m)*z/r^5 - mz/r^3
+    bz = (3.0 * aux) * z_observed - mz / np.power(squared_distance, 3.0 / 2.0)
 
-    # Combine the x, y, and z components of the field to get the total field
     return 1e-7 * bz
